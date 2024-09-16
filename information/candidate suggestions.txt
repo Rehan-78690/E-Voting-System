@@ -1,0 +1,83 @@
+For a university voting system where the admin manages candidates, it's important to structure the **Manage Candidates** screen and database in a way that facilitates efficient and secure handling of candidate information. I'll provide you with a comprehensive breakdown of what should be present in the **Manage Candidates** screen, along with suggestions for the candidate-related database tables.
+
+### **Manage Candidates Screen**:
+
+1. **Candidate List**:
+   - **Table of Candidates**: Display a list of all candidates with relevant details. This table could include columns like:
+     - **Candidate Name**
+     - **Department/Program**
+     - **Year of Study**
+     - **Symbol**: This should display the allocated symbol (you could allow symbol allocation here or in a separate screen, depending on your preference).
+     - **Status**: Indicate whether the candidate is active, disqualified, or pending approval.
+     - **Actions**: Buttons for editing, removing, or viewing candidate profiles.
+
+2. **Add New Candidate**:
+   - A form to input new candidate details. Fields could include:
+     - **Full Name**
+     - **Student ID**
+     - **Email Address**
+     - **Department/Program**
+     - **Year of Study**
+     - **Profile Picture** (optional)
+     - **Proposed Symbol**: Allow the admin to allocate a symbol to the candidate here, or leave it for the symbol allocation screen.
+     - **Candidate Manifesto**: An optional field where candidates can provide a brief statement or manifesto.
+     - **Supporting Documents**: Option to upload documents that verify eligibility (e.g., student ID, enrollment verification).
+
+3. **Edit Candidate Information**:
+   - An interface for the admin to edit existing candidate information. This could include updating the candidate's personal details, changing the allocated symbol, or updating the status (e.g., active, disqualified).
+
+4. **Remove Candidate**:
+   - Provide functionality to remove candidates from the system. This should include confirmation prompts to avoid accidental deletions.
+
+5. **Search and Filter**:
+   - Allow the admin to search for candidates by name, department, year of study, or status.
+   - Filters to quickly sort candidates by status (e.g., active, disqualified, pending approval).
+
+6. **Candidate Profile View**:
+   - A detailed view of each candidate's profile, where the admin can see all information submitted by the candidate, including their manifesto, symbols, and documents.
+
+### **Candidate Database Structure**:
+
+#### **Table 1: `candidates` (Admin Managed)**
+
+This table stores the core information about candidates, managed by the admin.
+
+- **id**: `INT` (Primary Key, Auto Increment)
+- **full_name**: `VARCHAR(255)`
+- **student_id**: `VARCHAR(50)` (Unique)
+- **email**: `VARCHAR(255)`
+- **department**: `VARCHAR(255)`
+- **year_of_study**: `VARCHAR(50)`
+- **symbol**: `VARCHAR(50)` (Symbol allocated by admin)
+- **status**: `ENUM('active', 'disqualified', 'pending')` (To track the candidate's status)
+- **manifesto**: `TEXT` (Optional field for candidate's manifesto)
+- **profile_picture**: `VARCHAR(255)` (Path to profile picture, optional)
+- **created_at**: `TIMESTAMP` (Timestamp when the candidate was added)
+- **updated_at**: `TIMESTAMP` (Timestamp for the last update)
+
+#### **Table 2: `candidate_profiles` (Candidate Managed)**
+
+This table stores additional information that candidates can update themselves, allowing them to manage certain aspects of their profiles.
+
+- **id**: `INT` (Primary Key, Auto Increment)
+- **candidate_id**: `INT` (Foreign Key referencing `candidates.id`)
+- **phone_number**: `VARCHAR(20)` (Optional)
+- **address**: `TEXT` (Optional, candidate's address)
+- **manifesto**: `TEXT` (Candidate's updated manifesto, if they are allowed to change it)
+- **profile_picture**: `VARCHAR(255)` (Allow candidates to update their profile picture)
+- **social_media_links**: `TEXT` (Optional, for candidates who want to link to their campaign social media profiles)
+- **updated_at**: `TIMESTAMP` (Timestamp for the last profile update)
+
+### **Rationale for Two Tables**:
+
+- **Separation of Responsibilities**: The `candidates` table is managed by the admin, containing core and critical information that affects the voting process. The `candidate_profiles` table allows candidates to update non-critical information, ensuring that they can personalize their profiles without risking the integrity of the core data.
+- **Security and Control**: By separating the tables, you minimize the risk of unauthorized changes to critical information like candidate status or symbol allocation, which should be strictly managed by the admin.
+- **Scalability**: This approach makes it easier to extend functionalities. For instance, if you want to add features where candidates can provide more details or campaign materials, you can easily expand the `candidate_profiles` table without affecting the core `candidates` table.
+
+### **Additional Suggestions**:
+
+- **Candidate Approval Process**: Consider implementing a workflow where newly added candidates are initially marked as "pending" and require admin approval before becoming active.
+- **Audit Log**: Keep a log of changes made to candidate profiles, especially those that affect their status, to ensure transparency and traceability.
+- **Symbol Management**: If symbol allocation is a crucial aspect, ensure that symbols are unique and that the admin can easily manage them, possibly from a dedicated screen.
+
+This structure and approach should provide a robust foundation for managing candidates in your voting system, allowing both the admin and candidates to interact with the system effectively while maintaining control and security.

@@ -1,0 +1,42 @@
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+#icon-ham{
+    display: block;
+    background-color:rgb(119, 106, 100);
+}
+.offcanvas-body {
+    padding-top: 20px;
+}
+.content {
+    padding: 20px;
+    margin-top: 60px; /* Adjust to prevent content overlap */
+    margin-bottom: 100px;
+}
+.navbar-brand {
+    padding-left: 10px;
+    margin-bottom: 100px;
+}
+.navbar-toggler {
+    margin-right: 10px;
+}
+@media (max-width: 991px) { 
+    .navbar-collapse {
+        display: flex;
+        justify-content: flex-end;
+    }
+    .navbar-text {
+        display: none; /* Hide the welcome message on smaller screens to fit other elements */
+    }
+}
+@media (min-width: 992px) { 
+    .navbar-toggler {
+        display: none; /* Hide drawer button on larger screens */
+    }
+    .navbar-text {
+        display: block;
+    }
+}
+
