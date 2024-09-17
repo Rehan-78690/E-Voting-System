@@ -1,17 +1,16 @@
 <?php
 session_start();
-include 'config.php'; // Ensure this includes the $conn variable
-
+include 'config.php'; 
 if (!isset($_SESSION['candidate_email'])) {
     header("Location: candidate.php");
     exit();
 }
 
-$alert_message = ""; // To store the alert message
+$alert_message = ""; 
 $candidate_id = $_SESSION['candidate_id'];
 
 // Check if the candidate has already submitted documents
-$sql = "SELECT id, document_path, withdrawn, status FROM candidate_documents WHERE candidate_id = ?";
+$sql = "SELECT id, document_path, withdrawn, status, verification_status FROM candidate_documents WHERE candidate_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $candidate_id);
 $stmt->execute();
@@ -24,17 +23,23 @@ if ($result->num_rows > 0) {
     $document_path = $row['document_path'];
     $withdrawn = $row['withdrawn'];
     $status = $row['status'];
+    $verification_status = $row['verification_status'];
 } else {
     // Candidate has not submitted documents
     $document_submitted = false;
     $document_path = '';
     $withdrawn = 0;
     $status = '';
+    $verification_status = '';
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['withdraw'])) {
-        // Handle withdrawal of documents and delete the file
+    
+    if (isset($_POST['withdraw'])) {    if ($verification_status == 'verified') {
+        // If document is verified, do not allow withdrawal
+        $alert_message = "Your document has already been verified and cannot be withdrawn.";
+    } else {
+
         if (file_exists($document_path)) {
             unlink($document_path); // Delete the file from the server
         }
@@ -48,49 +53,58 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             $alert_message = "Error withdrawing your documents: " . $stmt->error;
         }
+    }
     } elseif (isset($_POST['resubmit']) && $document_submitted) {
-        // Handle resubmission of documents
-        if (isset($_FILES['document']) && $_FILES['document']['error'] == 0) {
-            $target_dir = "../uploads/documents/";
-            $target_file = $target_dir . basename($_FILES["document"]["name"]);
-            $uploadOk = 1;
-            $documentFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-
-            // Check file size
-            if ($_FILES["document"]["size"] > 500000) {
-                $alert_message = "Sorry, your file is too large.";
-                $uploadOk = 0;
-            }
-
-            // Allow certain file formats
-            if ($documentFileType != "pdf" && $documentFileType != "doc" && $documentFileType != "docx") {
-                $alert_message = "Sorry, only PDF, DOC & DOCX files are allowed.";
-                $uploadOk = 0;
-            }
-
-            if ($uploadOk == 1) {
-                if (file_exists($document_path)) {
-                    unlink($document_path); // Delete the old file before moving the new one
-                }
-
-                if (move_uploaded_file($_FILES["document"]["tmp_name"], $target_file)) {
-                    // Insert or update document information in the database
-                    $submission_date = date("Y-m-d H:i:s"); // Current date and time
-                    $sql = "UPDATE candidate_documents SET document_path=?, submission_date=?, status='Pending' WHERE id=?";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("ssi", $target_file, $submission_date, $row['id']);
-                    if ($stmt->execute()) {
-                        $alert_message = "Your document has been resubmitted successfully.";
-                        $document_path = $target_file;
-                    } else {
-                        $alert_message = "Error updating the database: " . $stmt->error;
-                    }
-                } else {
-                    $alert_message = "Sorry, there was an error uploading your file.";
-                }
-            }
+        // **Prevent resubmission if the document is verified**
+        if ($verification_status == 'verified') {
+            // If document is verified, do not allow resubmission
+            $alert_message = "Your document has already been verified and cannot be resubmitted.";
         } else {
-            $alert_message = "No file selected for resubmission.";
+            // Proceed with document resubmission
+            if (isset($_FILES['document']) && $_FILES['document']['error'] == 0) {
+                $target_dir = "../uploads/documents/";
+                $target_file = $target_dir . basename($_FILES["document"]["name"]);
+                $uploadOk = 1;
+                $documentFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+
+                // Check file size
+                if ($_FILES["document"]["size"] > 900000) {
+                    $alert_message = "Sorry, your file is too large.";
+                    $uploadOk = 0;
+                }
+
+                // Allow only certain file formats
+                if ($documentFileType != "pdf" && $documentFileType != "doc" && $documentFileType != "docx") {
+                    $alert_message = "Sorry, only PDF, DOC & DOCX files are allowed.";
+                    $uploadOk = 0;
+                }
+
+                if ($uploadOk == 1) {
+                    // If a previous document exists, delete it
+                    if (file_exists($document_path)) {
+                        unlink($document_path); // Delete the old file
+                    }
+
+                    // Move the new file to the server
+                    if (move_uploaded_file($_FILES["document"]["tmp_name"], $target_file)) {
+                        // Update the document information in the database
+                        $submission_date = date("Y-m-d H:i:s"); // Current date and time
+                        $sql = "UPDATE candidate_documents SET document_path=?, submission_date=?, status='Pending' WHERE id=?";
+                        $stmt = $conn->prepare($sql);
+                        $stmt->bind_param("ssi", $target_file, $submission_date, $row['id']);
+                        if ($stmt->execute()) {
+                            $alert_message = "Your document has been resubmitted successfully.";
+                            $document_path = $target_file;
+                        } else {
+                            $alert_message = "Error updating the database: " . $stmt->error;
+                        }
+                    } else {
+                        $alert_message = "Sorry, there was an error uploading your file.";
+                    }
+                }
+            } else {
+                $alert_message = "No file selected for resubmission.";
+            }
         }
     } elseif (isset($_POST['submit']) && !$document_submitted) {
         // Handle first-time submission or submission after withdrawal
@@ -101,20 +115,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $documentFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
 
             // Check file size
-            if ($_FILES["document"]["size"] > 500000) {
+            if ($_FILES["document"]["size"] > 900000) {
                 $alert_message = "Sorry, your file is too large.";
                 $uploadOk = 0;
             }
 
-            // Allow certain file formats
+            // Allow only certain file formats
             if ($documentFileType != "pdf" && $documentFileType != "doc" && $documentFileType != "docx") {
                 $alert_message = "Sorry, only PDF, DOC & DOCX files are allowed.";
                 $uploadOk = 0;
             }
 
             if ($uploadOk == 1) {
+                // Move the file to the server
                 if (move_uploaded_file($_FILES["document"]["tmp_name"], $target_file)) {
-                    // Insert document information into the database
+                    // Insert the document information into the database
                     $submission_date = date("Y-m-d H:i:s"); // Current date and time
                     $sql = "INSERT INTO candidate_documents (candidate_id, document_path, submission_date, status) 
                             VALUES (?, ?, ?, 'Pending')";
@@ -123,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     if ($stmt->execute()) {
                         $alert_message = "Your document has been submitted successfully.";
                         $document_submitted = true; 
-                        $document_path = $target_file;// Mark as submitted
+                        $document_path = $target_file; // Mark as submitted
                     } else {
                         $alert_message = "Error updating the database: " . $stmt->error;
                     }

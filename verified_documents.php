@@ -8,13 +8,23 @@ if (!isset($_SESSION['email'])) {
     exit();
 }
 
-// Fetch all candidates with verified documents
-$sql = "SELECT c.candidate_name, cd.document_path, cd.submission_date
-        FROM candidate_documents cd
-        JOIN candidates c ON cd.candidate_id = c.candidate_id
-        WHERE cd.verification_status = 'verified'";
-$result = $conn->query($sql);
+try {
+    // Query to fetch verified candidates and their documents
+    $sql = "SELECT c.candidate_name, cd.document_path, cd.submission_date
+            FROM candidate_documents cd
+            JOIN candidates c ON cd.candidate_id = c.candidate_id
+            WHERE cd.verification_status = 'verified'";
+    $result = $conn->query($sql);
 
+    if (!$result) {
+        // Throw an exception if the query fails
+        throw new Exception("Error fetching verified candidates: " . $conn->error);
+    }
+} catch (Exception $e) {
+    // If an error occurs, show an error message
+    echo '<div class="alert alert-danger" role="alert">' . $e->getMessage() . '</div>';
+    exit(); // Stop further execution
+}
 ?>
 
 <!DOCTYPE html>
@@ -35,7 +45,7 @@ $result = $conn->query($sql);
             <thead>
                 <tr>
                     <th>Candidate Name</th>
-                    <th>View documents</th>
+                    <th>View Document</th>
                     <th>Submission Date</th>
                 </tr>
             </thead>
@@ -43,7 +53,29 @@ $result = $conn->query($sql);
                 <?php while ($row = $result->fetch_assoc()): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($row['candidate_name']); ?></td>
-                        <td><a href="<?php echo htmlspecialchars(str_replace("../", "", $row['document_path'])); ?>" target="_blank">View Document</a></td>
+                        <td>
+                            <?php
+                            try {
+                                // Check if the document path is set and valid
+                                if (!isset($row['document_path']) || empty($row['document_path'])) {
+                                    throw new Exception("Document path is missing for candidate " . $row['candidate_name']);
+                                }
+
+                                $file_path = str_replace("../", "", $row['document_path']);
+                               
+                                // Optionally check if the file exists
+                                if (!file_exists($file_path)) {
+                                    throw new Exception("Document not found at the specified path for candidate " . $row['candidate_name']);
+                                }
+
+                                // Display the document link if everything is okay
+                                echo '<a href="' . htmlspecialchars($file_path) . '" target="_blank">View Document</a>';
+                            } catch (Exception $e) {
+                                // Show the error if any issue occurs
+                                echo '<span style="color: red;">Error: ' . $e->getMessage() . '</span>';
+                            }
+                            ?>
+                        </td>
                         <td><?php echo htmlspecialchars($row['submission_date']); ?></td>
                     </tr>
                 <?php endwhile; ?>

@@ -1,8 +1,8 @@
 <?php
 session_start();
-include 'config.php'; // Ensure this includes the $conn variable
+include 'config.php'; 
 
-// Check if the admin is logged in
+
 if (!isset($_SESSION['email'])) {
     header("Location: admin.php");
     exit();
@@ -12,9 +12,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Get data from the form
     $document_id = intval($_POST['document_id']);
     $verification_status = $_POST['verification_status'];
-    $admin_id = $_SESSION['admin_id']; // Assuming admin's ID is stored in the session
+    $admin_id = $_SESSION['admin_id']; 
 
-    // Update the verification status and the admin who verified the document
+    
     $sql = "UPDATE candidate_documents SET verification_status = ?, verified_by = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sii", $verification_status, $admin_id, $document_id);
@@ -97,6 +97,9 @@ $result = $conn->query($sql);
         });
     });
 </script>
+<?php 
+
+?>
 <a href="verified_documents.php"> view verified documennts</a>
 
 </body>
