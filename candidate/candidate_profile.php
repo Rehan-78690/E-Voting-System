@@ -100,9 +100,7 @@ if (isset($_POST['current_password'], $_POST['password'], $_POST['cpassword'])) 
     } else {
         echo "<script>alert('Current password is incorrect.');</script>";
     }
-} else {
-    echo "<script>alert('Password form not submitted correctly.');</script>";
-}
+} 
 ?>
 
 

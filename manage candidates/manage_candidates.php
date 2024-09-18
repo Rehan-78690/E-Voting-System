@@ -6,8 +6,8 @@ if (!isset($_SESSION['email'])) {
     exit();
 }
 
-// Handling form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+// Handling form submission for adding a new candidate
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_candidate'])) {
     // Get form data
     $candidate_name = htmlspecialchars($_POST['candidate_name']);
     $candidate_role = htmlspecialchars($_POST['candidate_role']);
@@ -15,15 +15,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $candidate_email = htmlspecialchars($_POST['candidate_email']);
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
     
-    // Handle file upload for profile picture and documents
+    // Handle file upload for the symbol
     $target_dir = "../uploads/";
-    
-    // symbol
     $symbol = $target_dir . basename($_FILES["symbol"]["name"]);
-    $symbol_pic_file_type = strtolower(pathinfo($symbol, PATHINFO_EXTENSION));
+    $symbol_file_type = strtolower(pathinfo($symbol, PATHINFO_EXTENSION));
 
-    // Check file type
-    if (in_array($symbol_pic_file_type, ['jpg', 'png', 'jpeg']) && $_FILES["symbol"]["size"] < 5000000) {
+    // Check file type and size
+    if (in_array($symbol_file_type, ['jpg', 'png', 'jpeg']) && $_FILES["symbol"]["size"] < 5000000) {
         move_uploaded_file($_FILES["symbol"]["tmp_name"], $symbol);
     } else {
         echo "Invalid symbol file type or size.";
@@ -31,8 +29,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Insert data into the database
-    $sql = "INSERT INTO candidates (candidate_name, candidate_email, password,  department, candidate_role,  symbol, status, created_at, updated_at)
-            VALUES ( ?, ?, ?, ?, ?, ?, 'Pending', NOW(), NOW())";
+    $sql = "INSERT INTO candidates (candidate_name, candidate_email, password, department, candidate_role, symbol, status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW(), NOW())";
 
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ssssss", $candidate_name, $candidate_email, $password, $candidate_department, $candidate_role, $symbol);
@@ -57,15 +55,13 @@ $result = $conn->query($query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Candidate Management</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-   <link rel="stylesheet" href="style.css">
-   <script src="script.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <!-- <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
             <button id="icon-ham" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar">
                 <span class="navbar-toggler-icon"></span>
@@ -89,37 +85,7 @@ $result = $conn->query($query);
                 </ul>
             </div>
         </div>
-    </nav>
-
-    <!-- Off-Canvas Sidebar -->
-    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasSidebar" aria-labelledby="offcanvasSidebarLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasSidebarLabel">Dashboard Menu</h5>
-            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link active" href="../admin.php">Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Candidate Management</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Document Verification</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Symbol Allocation</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Feedback Management</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="../elections/election_settings.php">Settings</a>
-                </li>
-            </ul>
-        </div>
-    </div>
+    </nav> -->
 
     <!-- Main Content -->
     <div class="content">
@@ -130,9 +96,11 @@ $result = $conn->query($query);
             <div class="d-flex justify-content-end mb-3">
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCandidateModal">Add New Candidate</button>
             </div>
+
             <script>
-    const candidatesData = {};
-</script>
+                const candidatesData = {};
+            </script>
+
             <!-- Candidates Table -->
             <div class="table-container">
                 <table class="table table-bordered table-striped">
@@ -170,19 +138,14 @@ $result = $conn->query($query);
                             <td>Pending</td>
                             <td><?php echo htmlspecialchars($row['symbol']); ?></td>
                             <td>
-         <button class="btn btn-sm btn-secondary view-btn" data-bs-toggle="modal" data-bs-target="#viewCandidateModal" data-candidate-id="<?php echo $row['candidate_id']; ?>">View</button>
+                                <button class="btn btn-sm btn-secondary view-btn" data-bs-toggle="modal" data-bs-target="#viewCandidateModal" data-candidate-id="<?php echo $row['candidate_id']; ?>">View</button>
 
-         <form id="editCandidateForm<?php echo $row['candidate_id']; ?>" method="POST" enctype="multipart/form-data" action="edit_candidate.php">
-    <input type="hidden" name="candidate_id" value="<?php echo $row['candidate_id']; ?>"> 
-    <button class="btn btn-sm btn-secondary edit-btn" data-bs-toggle="modal" data-bs-target="#editCandidateModal" data-candidate-id="<?php echo $row['candidate_id']; ?>">Edit</button>
+                                <button class="btn btn-sm btn-secondary edit-btn" data-bs-toggle="modal" data-bs-target="#editCandidateModal" data-candidate-id="<?php echo $row['candidate_id']; ?>">Edit</button>
 
-</form>
-<form method="POST" action="delete_candidate.php">
-    <input type="hidden" name="candidate_id" value="<?php echo $row['candidate_id']; ?>">
-    <button type="submit" class="btn btn-sm btn-danger">Remove</button>
-</form>
-
-
+                                <form method="POST" action="delete_candidate.php" style="display:inline;">
+                                    <input type="hidden" name="candidate_id" value="<?php echo $row['candidate_id']; ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                                </form>
                             </td>
                         </tr>
                     <?php
@@ -230,104 +193,128 @@ $result = $conn->query($query);
                             <label for="password" class="form-label">Password</label>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
-                        
                         <div class="mb-3">
-                            <label for="symbol" class="form-label">symbol</label>
-                            <input type="file" class="form-control" id="symbol" name="symbol">
-                            <small>leave this empty if you don't want to add symbol</small>
+                            <label for="symbol" class="form-label">Symbol</label>
+                            <input type="file" class="form-control" id="symbol" name="symbol" required>
                         </div>
-                        
-                        
-                        <button type="submit" class="btn btn-primary">Add Candidate</button>
+                        <button type="submit" name="submit_candidate" class="btn btn-primary">Add Candidate</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Edit Candidate Modal -->
-<div class="modal fade" id="editCandidateModal" tabindex="-1" aria-labelledby="editCandidateModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editCandidateModalLabel">Edit Candidate</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editCandidateForm" method="POST">
-                    <div class="mb-3">
-                        <label for="editCandidateName" class="form-label">Full Name</label>
-                        <input type="text" class="form-control" id="editCandidateName" name="candidate_name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editCandidateRole" class="form-label">Role</label>
-                        <select class="form-select" id="editCandidateRole" name="candidate_role" required>
-                            <option value="Lecturer">Lecturer</option>
-                            <option value="Professor">Professor</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editCandidateDepartment" class="form-label">Department</label>
-                        <input type="text" class="form-control" id="editCandidateDepartment" name="candidate_department" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="editSymbol" class="form-label">Symbol</label>
-                        <input type="file" class="form-control" id="editSymbol" name="symbol">
-                        <img id="editSymbolPreview" src="<?php echo htmlspecialchars($row['symbol']); ?>" alt="Current Symbol" style="max-width: 100%; height: auto; margin-top: 5px;">
-                        <small>Leave blank to keep the current symbol.</small>
 
+    <!-- Edit Candidate Modal -->
+    <div class="modal fade" id="editCandidateModal" tabindex="-1" aria-labelledby="editCandidateModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCandidateModalLabel">Edit Candidate</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editCandidateForm" method="POST" enctype="multipart/form-data" action="edit_candidate.php">
+                        <input type="hidden" name="candidate_id" id="editCandidateId"> 
+                        <div class="mb-3">
+                            <label for="editCandidateName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="editCandidateName" name="candidate_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editCandidateRole" class="form-label">Role</label>
+                            <select class="form-select" id="editCandidateRole" name="candidate_role" required>
+                                <option value="Lecturer">Lecturer</option>
+                                <option value="Professor">Professor</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editCandidateDepartment" class="form-label">Department</label>
+                            <input type="text" class="form-control" id="editCandidateDepartment" name="candidate_department" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Candidate Modal -->
+    <div class="modal fade" id="viewCandidateModal" tabindex="-1" aria-labelledby="viewCandidateModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewCandidateModalLabel">View Candidate</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Name:</strong></div>
+                        <div class="col-8"><span id="viewCandidateName"></span></div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- View Candidate Modal -->
-<div class="modal fade" id="viewCandidateModal" tabindex="-1" aria-labelledby="viewCandidateModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="viewCandidateModalLabel">View Candidate</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row mb-2">
-                    <div class="col-4"><strong>Name:</strong></div>
-                    <div class="col-8"><span id="viewCandidateName"></span></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4"><strong>Role:</strong></div>
-                    <div class="col-8"><span id="viewCandidateRole"></span></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4"><strong>Department:</strong></div>
-                    <div class="col-8"><span id="viewCandidateDepartment"></span></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4"><strong>Email:</strong></div>
-                    <div class="col-8"><span id="viewCandidateEmail"></span></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4"><strong>Number:</strong></div>
-                    <div class="col-8"><span id="viewCandidateNumber"></span></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4"><strong>Address:</strong></div>
-                    <div class="col-8"><span id="viewAddress"></span></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4"><strong>Manifesto:</strong></div>
-                    <div class="col-8"><span id="viewManifesto"></span></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4"><strong>Social Media Links:</strong></div>
-                    <div class="col-8"><span id="viewSocialmediaLinks"></span></div>
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Role:</strong></div>
+                        <div class="col-8"><span id="viewCandidateRole"></span></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Department:</strong></div>
+                        <div class="col-8"><span id="viewCandidateDepartment"></span></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Email:</strong></div>
+                        <div class="col-8"><span id="viewCandidateEmail"></span></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Number:</strong></div>
+                        <div class="col-8"><span id="viewCandidateNumber"></span></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Address:</strong></div>
+                        <div class="col-8"><span id="viewAddress"></span></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Manifesto:</strong></div>
+                        <div class="col-8"><span id="viewManifesto"></span></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Social Media Links:</strong></div>
+                        <div class="col-8"><span id="viewSocialmediaLinks"></span></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- JavaScript to Populate Modal with Data -->
+    <script>
+        document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const candidateId = this.getAttribute('data-candidate-id');
+                const candidate = candidatesData[candidateId];
+
+                // Populate the form fields for editing
+                document.getElementById('editCandidateName').value = candidate.candidate_name;
+                document.getElementById('editCandidateRole').value = candidate.candidate_role;
+                document.getElementById('editCandidateDepartment').value = candidate.department;
+                document.getElementById('editCandidateId').value = candidateId;
+            });
+        });
+
+        document.querySelectorAll('.view-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const candidateId = this.getAttribute('data-candidate-id');
+                const candidate = candidatesData[candidateId];
+
+                // Populate the modal for viewing
+                document.getElementById('viewCandidateName').textContent = candidate.candidate_name;
+                document.getElementById('viewCandidateRole').textContent = candidate.candidate_role;
+                document.getElementById('viewCandidateDepartment').textContent = candidate.department;
+                document.getElementById('viewCandidateEmail').textContent = candidate.candidate_email;
+                document.getElementById('viewCandidateNumber').textContent = candidate.candidate_number;
+                document.getElementById('viewAddress').textContent = candidate.address;
+                document.getElementById('viewManifesto').textContent = candidate.manifesto;
+                document.getElementById('viewSocialmediaLinks').textContent = candidate.socialmedia_links;
+            });
+        });
+    </script>
 
 </body>
 </html>

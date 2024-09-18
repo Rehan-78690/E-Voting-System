@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $candidate_role = htmlspecialchars($_POST['candidate_role']);
     $candidate_department = htmlspecialchars($_POST['candidate_department']);
     // Add more fields as needed
-
+print ($candidate_name);
     // Handle the symbol upload
     $symbol = "";
     if (isset($_FILES['symbol']) && $_FILES['symbol']['error'] === UPLOAD_ERR_OK) {

@@ -4,7 +4,7 @@ include 'config.php'; // Database connection
 
 // Check if the candidate is logged in
 if (!isset($_SESSION['candidate_email'])) {
-    header("Location: candidate_login.php");
+    header("Location: candidate.php");
     exit();
 }
 
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_feedback'])) {
     $submission_date = date('Y-m-d H:i:s'); // Get the current date and time
 
     // Insert feedback into the database
-    $sql = "INSERT INTO feedback (candidate_id, feedback_text, submission_date, status) VALUES (?, ?, ?, 'Pending')";
+    $sql = "INSERT INTO feedback (candidate_id, feedback_text, date, status) VALUES (?, ?, ?, 'Pending')";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('iss', $candidate_id, $feedback_text, $submission_date);
 

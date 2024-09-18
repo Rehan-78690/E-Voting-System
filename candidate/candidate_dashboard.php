@@ -200,7 +200,7 @@ $upcoming_election = $result->fetch_assoc();
                 <a class="nav-link" href="#">
                     <span class="icon-large">&#x1F4CA;</span> View Symbol
                 </a>
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="candidate_feedback.php">
                     <span class="icon-large">&#x1F4AC;</span> Report Issues
                 </a>
             </div>
@@ -249,7 +249,7 @@ $upcoming_election = $result->fetch_assoc();
                             <div class="card-header">Report Issues</div>
                             <div class="card-body">
                                 <p>Report any issues or concerns regarding the election process.</p>
-                                <a href="#" class="btn btn-primary">Report Issue</a>
+                                <a href="candidate_feedback.php" class="btn btn-primary">Report Issue</a>
                             </div>
                         </div>
                     </div>

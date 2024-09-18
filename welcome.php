@@ -108,7 +108,7 @@ if (!isset($_SESSION['email'])) {
                     <a class="nav-link" href="#">Symbol Allocation</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Feedback Management</a>
+                    <a class="nav-link" href="manage_feedback.php">Feedback Management</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Settings</a>
@@ -167,7 +167,7 @@ if (!isset($_SESSION['email'])) {
                         <div class="card-body">
                             <h5 class="card-title">Feedback Management</h5>
                             <p class="card-text">Manage the feedback provided by the users.</p>
-                            <a href="#" class="btn btn-primary">Manage Feedback</a>
+                            <a href="manage_feedback.php" class="btn btn-primary">Manage Feedback</a>
                         </div>
                     </div>
                   
