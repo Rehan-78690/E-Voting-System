@@ -245,7 +245,7 @@ $upcoming_election = $result->fetch_assoc();
                             <div class="card-body">
                                 <p>Upcoming Elections: <strong>2024 Senate Election</strong></p>
                                 <p>Candidate Information: <a href="#">View Candidates</a></p>
-                                <p>Ballot Measures: <a href="#">View Measures</a></p>
+                                <p>Ballot Measures: <a href="ballot.php">cast your vote</a></p>
                             </div>
                         </div>
                     </div>

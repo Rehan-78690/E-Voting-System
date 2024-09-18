@@ -172,6 +172,9 @@ if (!isset($_SESSION['email'])) {
                     </div>
                   
             </div>
+         
+    </div>
+           
             <div class="col-md-6">
                     <div class="card">
                         <div class="card-body">
@@ -181,11 +184,18 @@ if (!isset($_SESSION['email'])) {
                         </div>
                     </div>
                 </div>
+                <div class="row-mt-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">view live voting</h5>
+                            <p class="card-text">see how the current election process is continuing</p>
+                            <a href="live_voting.php" class="btn btn-primary">view</a>
+                        </div>
+                    </div>
+                </div>
                 </div>
            
-        
-        </div>
     </div>
-
+     
 </body>
 </html>
