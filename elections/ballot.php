@@ -1,10 +1,38 @@
 <?php
 include "config.php";
 session_start();
-if (!isset($_SESSION['email'])) {
+if (!isset($_SESSION['candidate_email'])) {
     header("Location: candidate.php");
     exit();
 }
+$election_check = "SELECT status FROM elections";
+$result = mysqli_query($conn, $election_check);
+if (mysqli_num_rows($result) > 0) {
+    $row = $result->fetch_assoc();
+    $election_status = $row['status'];
+    if ($election_status === 'completed') {
+        echo "Election is completed. You cannot vote now.";
+        $delay=2;
+        header("refresh:$delay;url=voter_dashboard.php");
+       
+        exit();
+    }
+    if($election_status===('inactive')){
+        echo"Elections have not started yet";
+        $delay=2;
+        header("refresh:$delay;url=voter_dashboard.php");
+       
+        exit();
+    }
+    if($election_status===('upcoming')){
+        echo"Elections are starting soon.Prepare to vote";
+        $delay=2;
+        header("refresh:$delay;url=voter_dashboard.php");
+        //view candidates page
+       
+        exit();
+    }
+    }
 
 $voter_id = $_SESSION['candidate_id'];
 

@@ -70,9 +70,14 @@
             Live Voting Results - Candidate Votes
         </div>
         <div class="card-body">
-            <!-- Chart.js Canvas for Live Voting -->
+            <!-- Chart.js Canvas for Bar Chart -->
             <div class="chart-container">
                 <canvas id="liveVotingChart"></canvas>
+            </div>
+
+            <!-- Chart.js Canvas for Pie Chart -->
+            <div class="chart-container mt-5">
+                <canvas id="votePieChart"></canvas>
             </div>
 
             <!-- Total Votes -->
@@ -92,9 +97,35 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // Chart.js Setup
     let liveVotingChart;
-    let chartConfig = {
+    let votePieChart;
+    let pieChartColors = [];  // Array to store the colors for the pie chart
+
+    // Function to generate a shade based on votes (lighter shades for fewer votes)
+    function getShade(baseColor, votePercentage) {
+        const shadeIntensity = Math.floor(255 * (1 - votePercentage)); // Darker with higher votes
+        return `rgba(${baseColor[0]}, ${baseColor[1]}, ${baseColor[2]}, ${shadeIntensity / 255})`;
+    }
+
+    // Predefined base colors for each candidate (RGB)
+    const baseColors = [
+        'rgba(255, 99, 132, 0.8)',   // Red
+        'rgba(54, 162, 235, 0.8)',   // Blue
+        'rgba(255, 206, 86, 0.8)',   // Yellow
+        'rgba(75, 192, 192, 0.8)',   // Green
+        'rgba(153, 102, 255, 0.8)',  // Purple
+        'rgba(255, 159, 64, 0.8)'    // Orange
+    ];
+
+    // Function to update the pie chart colors every minute
+    function updatePieChartColors() {
+        pieChartColors = votePieChart.data.labels.map(() => `#${Math.floor(Math.random() * 16777215).toString(16)}`);
+        votePieChart.data.datasets[0].backgroundColor = pieChartColors;
+        votePieChart.update();
+    }
+
+    // Chart.js Configuration for the Bar Chart
+    const barChartConfig = {
         type: 'bar',
         data: {
             labels: [],  // Candidate Names will be inserted here
@@ -112,49 +143,110 @@
                     beginAtZero: true
                 }
             },
-            responsive: true
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
         }
     };
 
-    // Function to update the chart with new data
-    function updateChart(data) {
+    // Chart.js Configuration for the Pie Chart
+    const pieChartConfig = {
+        type: 'pie',
+        data: {
+            labels: [], // Candidate names as labels
+            datasets: [{
+                label: 'Votes',
+                data: [], // Vote counts
+                backgroundColor: baseColors, // Start with base colors
+                borderColor: '#fff',
+                borderWidth: 2,
+                hoverOffset: 10  // Enlarge on hover
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.raw || '0';
+                            return label + ' votes';
+                        }
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                intersect: true
+            }
+        }
+    };
+
+    // Function to update both charts with new data and gradients based on votes
+    function updateCharts(data) {
         const labels = data.map(candidate => candidate.candidate_name);
         const votes = data.map(candidate => candidate.total_votes);
+        const totalVotes = votes.reduce((a, b) => a + b, 0);
 
+        // Update Bar Chart
         liveVotingChart.data.labels = labels;
         liveVotingChart.data.datasets[0].data = votes;
         liveVotingChart.update();
+
+        // Update Pie Chart Data
+        votePieChart.data.labels = labels;
+        votePieChart.data.datasets[0].data = votes;
+        votePieChart.update();
     }
 
     // Function to fetch live voting data from the server
     function fetchLiveVotingData() {
-        fetch('get_live_voting_data.php')  
+        fetch('get_live_voting_data.php')
             .then(response => response.json())
             .then(data => {
-                updateChart(data);
+                updateCharts(data);
 
                 // Update the total votes
                 const totalVotes = data.reduce((acc, candidate) => acc + parseInt(candidate.total_votes), 0);
                 document.getElementById('totalVotes').textContent = totalVotes;
-                const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            const formattedTime = `${hours}:${minutes}`;
 
-            // Update the last updated time with the formatted time
-            document.getElementById('lastUpdated').textContent = `Last updated: ${formattedTime}`;
+                // Update the last updated time
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const formattedTime = `${hours}:${minutes}`;
+                document.getElementById('lastUpdated').textContent = `Last updated: ${formattedTime}`;
             });
     }
 
-    // Initialize the chart on page load
+    // Initialize both charts on page load
     window.onload = function () {
-        const ctx = document.getElementById('liveVotingChart').getContext('2d');
-        liveVotingChart = new Chart(ctx, chartConfig);
+        const barCtx = document.getElementById('liveVotingChart').getContext('2d');
+        const pieCtx = document.getElementById('votePieChart').getContext('2d');
+
+        liveVotingChart = new Chart(barCtx, barChartConfig);
+        votePieChart = new Chart(pieCtx, pieChartConfig);
 
         // Fetch live data every 10 seconds
         setInterval(fetchLiveVotingData, 10000);
+
+        // Update pie chart colors every minute (60000 milliseconds)
+        setInterval(updatePieChartColors, 60000);
+
+        // Initial fetch to populate the charts
+        fetchLiveVotingData();
     };
 </script>
+
 </body>
 </html>
