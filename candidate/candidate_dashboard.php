@@ -203,6 +203,9 @@ $upcoming_election = $result->fetch_assoc();
                 <a class="nav-link" href="candidate_feedback.php">
                     <span class="icon-large">&#x1F4AC;</span> Report Issues
                 </a>
+                <a class="nav-link" href="logout.php">
+                    <span class="icon-large">&#x1F511;</span> Sign Out
+                </a>
             </div>
         </div>
 

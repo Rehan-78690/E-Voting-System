@@ -80,9 +80,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
             ?>
             <div class="links">
-                <a href="admin.php">Admin Portal</a>
+                <a href="../admin.php">Admin Portal</a>
                 <a href="#">Candidate Portal</a>
-                <a href="voter.php">Voter Portal</a>
+                <a href="../elections/voter.php">Voter Portal</a>
             </div>
         </div>
     </div>

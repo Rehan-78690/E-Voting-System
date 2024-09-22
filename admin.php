@@ -66,8 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             ?>
             <div class="links">
                 <a href="#">Admin Portal</a>
-                <a href="candidate.php">Candidate Portal</a>
-                <a href="voter.php">Voter Portal</a>
+                <a href="candidate/candidate.php">Candidate Portal</a>
+                <a href="elections/voter.php">Voter Portal</a>
             </div>
         </div>
     </div>

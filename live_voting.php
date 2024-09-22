@@ -1,3 +1,39 @@
+<?php
+include 'config.php';
+session_start();
+if (!isset($_SESSION['email'])) {
+    header("Location: admin.php");
+    exit();
+}
+$election_check = "SELECT status FROM elections";
+$result = mysqli_query($conn, $election_check);
+if (mysqli_num_rows($result) > 0) {
+    $row = $result->fetch_assoc();
+    $election_status = $row['status'];
+    if ($election_status === 'completed') {
+        echo "Election is completed.See voting history??";
+        $delay=2;
+        header("refresh:$delay;url=welcome.php");
+       
+        exit();
+    }
+    if($election_status===('inactive')){
+        echo"Elections have not started yet.Activate elections now";
+        $delay=2;
+        header("refresh:$delay;url=welcome.php");
+       
+        exit();
+    }
+    if($election_status===('upcoming')){
+        echo"Elections are starting soon.Wait for a few days to see the live voting results";
+        $delay=2;
+        header("refresh:$delay;url=welcome.php");
+        //view candidates page
+       
+        exit();
+    }
+    }
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

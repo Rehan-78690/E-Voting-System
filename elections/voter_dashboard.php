@@ -225,7 +225,7 @@ $upcoming_election = $result->fetch_assoc();
                     <span class="icon-large">&#x1F4C3;</span> Vote Confirmation
                 </a>
                
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="logout.php">
                     <span class="icon-large">&#x1F511;</span> Sign Out
                 </a>
             </div>

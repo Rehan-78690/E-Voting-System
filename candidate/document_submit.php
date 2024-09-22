@@ -6,6 +6,19 @@ if (!isset($_SESSION['candidate_email'])) {
     exit();
 }
 
+$election_check = "SELECT status FROM elections";
+$result = mysqli_query($conn, $election_check);
+if (mysqli_num_rows($result) > 0) {
+    $row = $result->fetch_assoc();
+    $election_status = $row['status'];
+    if ($election_status !== 'upcoming') {
+        echo "Elections are inactive at the moment .You will be notified via email, when to submit the documents";
+        $delay=2;
+        header("refresh:$delay;url=candidate_dashboard.php");
+       
+        exit();
+    }
+    }
 $alert_message = ""; 
 $candidate_id = $_SESSION['candidate_id'];
 
