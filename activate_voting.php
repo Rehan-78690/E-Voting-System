@@ -4,10 +4,13 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 require 'vendor/autoload.php';
 
-// Function to send email notifications
 function sendEmailNotification($conn, $election_id) {
-    $email_query = "SELECT candidate_email FROM candidates";
-    $email_result = mysqli_query($conn, $email_query);
+    // Get only the candidates for the specific election
+    $email_query = "SELECT candidate_email FROM candidates WHERE election_id = ?";
+    $stmt = $conn->prepare($email_query);
+    $stmt->bind_param("i", $election_id);
+    $stmt->execute();
+    $email_result = $stmt->get_result();
 
     if ($email_result && mysqli_num_rows($email_result) > 0) {
         while ($email_row = mysqli_fetch_assoc($email_result)) {
@@ -20,22 +23,19 @@ function sendEmailNotification($conn, $election_id) {
                     $mail->Host = 'smtp.gmail.com';
                     $mail->SMTPAuth = true;
                     $mail->Username = 'rehankhan.upr@gmail.com';
-                    $mail->Password = 'ccqu utkq itfm lznb'; // App password
+                    $mail->Password = 'ccqu utkq itfm lznb'; 
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                     $mail->Port = 587;
 
-                    // Recipients
                     $mail->setFrom('UPRSenate@upr.edu.pk', 'UPR Senate');
-                    $mail->addAddress($user_email); // Send to each candidate's email
-
-                    // Email content
+                    $mail->addAddress($user_email);
                     $mail->isHTML(true);
                     $mail->Subject = 'Election Notification';
                     $mail->Body = "Elections have started. Please vote as soon as possible.";
                     $mail->AltBody = 'Elections have started, please vote.';
 
                     $mail->send();
-                    $mail->clearAddresses(); // Clear addresses for the next iteration
+                    $mail->clearAddresses();
                 } catch (Exception $e) {
                     echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
                 }
@@ -44,14 +44,14 @@ function sendEmailNotification($conn, $election_id) {
     } else {
         echo "No candidates found to notify.";
     }
+    $stmt->close();
 }
 
-// Main logic for activating/deactivating voting
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['election_id'])) {
     $election_id = $_POST['election_id'];
 
     // Fetch the election start and end times
-    $status_query = "SELECT start_time, end_time, status FROM elections WHERE election_id = ?";
+    $status_query = "SELECT start_time, end_time, status, role FROM elections WHERE election_id = ?";
     $stmt = $conn->prepare($status_query);
     $stmt->bind_param("i", $election_id);
     $stmt->execute();
@@ -62,24 +62,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['election_id'])) {
         $election_start_time = $row['start_time'];
         $election_end_time = $row['end_time'];
         $current_status = $row['status'];
-        
+        $role = $row['role'];
+
         $current_time = date('H:i:s');
         
-        // Check if the election is already active or inactive
+        // Check if the election is already completed
         if ($current_status == 'completed') {
-            echo "The elections have completed and voting has been deactivated.";
-        } else if ($current_time >= $election_start_time && $current_time <= $election_end_time) {
-            // Activate voting
+            echo "The election is completed, and the status cannot be changed.";
+        } 
+        // Check if the election is inactive and needs to be updated to upcoming first
+        elseif ($current_status == 'inactive') {
+            echo "The election is inactive. Please update the status to 'upcoming' first.";
+        } 
+        // Check if the election is upcoming and can be activated
+        elseif ($current_status == 'upcoming') {
+            // Activate the election
             $update_query = "UPDATE elections SET status = 'active' WHERE election_id = ?";
             $stmt_update = $conn->prepare($update_query);
             $stmt_update->bind_param("i", $election_id);
             if ($stmt_update->execute()) {
-                echo "Voting has been activated.";
-                sendEmailNotification($conn, $election_id); // Send notification emails
+                echo "The election is now active.";
+                sendEmailNotification($conn, $election_id); // Notify candidates
             } else {
-                echo "Failed to activate voting.";
+                echo "Failed to activate the election.";
             }
-        } else if ($current_time > $election_end_time) {
+            $stmt_update->close();
+        }
+        // Check if the current time is greater than the end time and deactivate if needed
+        elseif ($current_time > $election_end_time) {
             // Deactivate voting
             $update_query = "UPDATE elections SET status = 'completed' WHERE election_id = ?";
             $stmt_update = $conn->prepare($update_query);
