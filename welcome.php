@@ -150,6 +150,17 @@ if (!isset($_SESSION['email'])) {
                             <a href="document_verification.php" class="btn btn-primary">Verify Documents</a>
                         </div>
                     </div>
+                    <div class="row-mt-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">see results</h5>
+                            <p class="card-text">see the election results</p>
+                            <a href="voting_result.php" class="btn btn-primary">view</a>
+                        </div>
+                    </div>
+                </div>
+                </div>
+           
                 </div>
                 <div class="col-md-6">
                     <div class="card">

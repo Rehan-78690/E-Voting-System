@@ -14,14 +14,12 @@ if (mysqli_num_rows($result) > 0) {
         echo "Election is completed. You cannot vote now.";
         $delay=2;
         header("refresh:$delay;url=voter_dashboard.php");
-       
         exit();
     }
     if($election_status===('inactive')){
         echo"Elections have not started yet";
         $delay=2;
         header("refresh:$delay;url=voter_dashboard.php");
-       
         exit();
     }
     if($election_status===('upcoming')){
@@ -29,7 +27,6 @@ if (mysqli_num_rows($result) > 0) {
         $delay=2;
         header("refresh:$delay;url=voter_dashboard.php");
         //view candidates page
-       
         exit();
     }
     }

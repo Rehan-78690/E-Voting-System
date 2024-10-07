@@ -56,21 +56,35 @@ if (!isset($_SESSION['results_sent'])) {
 }
 
 // Fetch election summary data
-$total_votes_query = "SELECT COUNT(*) as total_votes FROM votes";
+$total_votes_query = "SELECT SUM(total_votes) as total_votes FROM votes";
 $total_votes_result = mysqli_query($conn, $total_votes_query);
-$total_votes = mysqli_fetch_assoc($total_votes_result)['total_votes'];
+
+// Error handling for query execution
+if (!$total_votes_result) {
+    die("Query failed: " . mysqli_error($conn));
+}
+
+$total_votes_row = mysqli_fetch_assoc($total_votes_result);
+
+if ($total_votes_row) {
+    $total_votes = $total_votes_row['total_votes'];
+} else {
+    $total_votes = 0; // No votes found
+}
+
+// Debugging output
+echo "Total Votes: " . $total_votes;
 
 // Fetch voter turnout (assuming total registered voters is known)
 $total_voters = 1000; // Replace with actual number
 $voter_turnout = ($total_votes / $total_voters) * 100;
-
 // Fetch candidates and their vote counts
 $candidates_query = "
-    SELECT c.candidate_id, c.candidate_name, c.profile_pic, c.candidate_role, c.department, COUNT(v.id) AS vote_count
-    FROM candidates c
-    LEFT JOIN votes v ON c.candidate_name = v.candidate_name
-    GROUP BY c.candidate_id
-    ORDER BY vote_count DESC";
+   SELECT c.candidate_id, c.candidate_name, c.profile_pic, c.candidate_role, c.department,SUM(v.total_votes) AS vote_count
+FROM candidates c
+LEFT JOIN votes v ON c.candidate_id = v.candidate_id
+GROUP BY c.candidate_id
+ORDER BY vote_count DESC";
 
 $candidates_result = mysqli_query($conn, $candidates_query);
 
@@ -201,7 +215,7 @@ foreach ($candidates as $candidate) {
     <div class="badge badge-gold">🏆</div>
     <img src="<?php echo $top_candidates[0]['profile_pic']; ?>" alt="Winner's Photo">
     <h2>Congratulations to <?php echo $top_candidates[0]['candidate_name']; ?></h2>
-    <p>Total Votes: <span id="winner-votes">0</span></p>
+    <p>Total Votes: <span id="winner-votes"><?php echo $total_votes;?></span></p>
     <p>Winning Percentage: <?php echo number_format(($top_candidates[0]['vote_count'] / $total_votes) * 100, 2); ?>%</p>
 </div>
 
@@ -218,7 +232,7 @@ foreach ($candidates as $candidate) {
 <div class="infographic">
     <div class="stat">
         <div class="icon">🗳️</div>
-        <div class="value" id="total-votes">0</div>
+        <div class="value" id="total-votes"><?php echo $total_votes_row['total_votes']; ?></div>
         <div class="label">Total Votes Cast</div>
     </div>
     <div class="stat">
@@ -254,10 +268,10 @@ foreach ($candidates as $candidate) {
             <?php endif; ?>
             <img src="<?php echo $candidate['profile_pic']; ?>" alt="Candidate Photo">
             <div class="name"><?php echo $candidate['candidate_name']; ?></div>
-            <div class="votes" id="vote-count-<?php echo $candidate['candidate_id']; ?>">0</div>
+            <div class="votes" id="vote-count-<?php echo $candidate['candidate_id']; ?>"><?php echo $candidate['vote_count']??0; ?></div>
         </div>
         <script>
-            const voteCount<?php echo $candidate['candidate_id']; ?> = new CountUp('vote-count-<?php echo $candidate['candidate_id']; ?>', <?php echo $candidate['vote_count']; ?>);
+            const voteCount<?php echo $candidate['candidate_id']; ?> = new CountUp('vote-count-<?php echo $candidate['candidate_id']; ?>', <?php echo $candidate['vote_count']?? 0; ?>);
             voteCount<?php echo $candidate['candidate_id']; ?>.start();
         </script>
     <?php endforeach; ?>
