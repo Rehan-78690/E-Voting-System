@@ -5,38 +5,47 @@ if (!isset($_SESSION['candidate_email'])) {
     header("Location: candidate.php");
     exit();
 }
-$election_check = "SELECT status FROM elections";
-$result = mysqli_query($conn, $election_check);
-if (mysqli_num_rows($result) > 0) {
+$election_id = isset($_GET['election_id']) ? intval($_GET['election_id']) : 0;
+
+if ($election_id == 0) {
+    echo "Invalid election.";
+    exit();
+}
+echo($election_id);
+// Check the status of the current election
+$election_check = "SELECT status FROM elections WHERE election_id = ?";
+$stmt = $conn->prepare($election_check);
+$stmt->bind_param("i", $election_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
     $election_status = $row['status'];
     if ($election_status === 'completed') {
         echo "Election is completed. You cannot vote now.";
-        $delay=2;
-        header("refresh:$delay;url=voter_dashboard.php");
+        header("refresh:2;url=voter_dashboard.php");
         exit();
     }
-    if($election_status===('inactive')){
-        echo"Elections have not started yet";
-        $delay=2;
-        header("refresh:$delay;url=voter_dashboard.php");
+    if ($election_status === 'inactive') {
+        echo "Elections have not started yet.";
+        header("refresh:2;url=voter_dashboard.php");
         exit();
     }
-    if($election_status===('upcoming')){
-        echo"Elections are starting soon.Prepare to vote";
-        $delay=2;
-        header("refresh:$delay;url=voter_dashboard.php");
-        //view candidates page
+    if ($election_status === 'upcoming') {
+        echo "Elections are starting soon. Prepare to vote.";
+        header("refresh:2;url=voter_dashboard.php");
         exit();
     }
-    }
+}
+
 
 $voter_id = $_SESSION['candidate_id'];
 
 // Check if the voter has already voted
 $sql = "SELECT has_voted FROM candidates WHERE candidate_id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $voter_id);
+$stmt->bind_param("i", $voter_id,);
 $stmt->execute();
 $stmt->bind_result($has_voted);
 $stmt->fetch();
@@ -50,9 +59,14 @@ header("Refresh: $delay; url=$redirect_url");
     exit();
 }
 
-// Prepare and execute the SQL query
-$query = "SELECT candidate_id, candidate_name, candidate_role, department, symbol FROM candidates";
-$result = $conn->query($query);
+$query = "SELECT c.candidate_id, c.candidate_name, c.candidate_role, c.department, c.symbol, IFNULL(v.total_votes, 0) AS total_votes
+          FROM candidates c
+          LEFT JOIN votes v ON c.candidate_id = v.candidate_id AND v.election_id = ?
+          ORDER BY c.candidate_name";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $election_id);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -89,10 +103,9 @@ $result = $conn->query($query);
                             <input type="hidden" name="candidate_name" value="<?php echo htmlspecialchars($row['candidate_name']); ?>">
                             <input type="hidden" name="role" value="<?php echo htmlspecialchars($row['candidate_role']); ?>">
                             <input type="hidden" name="department" value="<?php echo htmlspecialchars($row['department']); ?>">
-
+                            <input type="hidden" name="election_id" value="<?php echo $election_id; ?>">
                         <td><button class="btn btn-sm btn-secondary" onclick="vote(<?php echo $row['candidate_id']; ?>, this)">Vote</button>
-                        <button class="btn btn-sm btn-danger" onclick="cancelVote(<?php echo $row['candidate_id']; ?>, this)">Cancel Vote</button>
-                    </form>
+                         </form>
                     </td>
                 </tr>
                 <?php
@@ -104,7 +117,15 @@ $result = $conn->query($query);
             </tbody>
         </table>
     </div>
-    
+    <?php
+    if($election_status === 'completed'){
+        $update_voter_sql = "UPDATE candidates SET has_voted = 0 WHERE candidate_id = ?";
+        $update_voter_stmt = $conn->prepare($update_voter_sql);
+        $update_voter_stmt->bind_param("i", $voter_id);
+        $update_voter_stmt->execute();
+        $update_voter_stmt->close();
+    }
+    ?>
     <script>
         let hasVoted = false;
 

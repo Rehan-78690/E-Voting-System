@@ -49,8 +49,14 @@ $result = $conn->query($sql);
                         <td><?php echo htmlspecialchars($row['date']); ?></td>
                         <td><?php echo htmlspecialchars($row['status']); ?></td>
                         <td>
-                            <a href="mark_reviewed.php?id=<?php echo $row['id']; ?>" class="btn btn-success btn-sm">Mark as Reviewed</a>
-                            <a href="delete_feedback.php?id=<?php echo $row['id']; ?>" class="btn btn-danger btn-sm">Delete</a>
+                        <a href="mark_reviewed.php?id=<?php echo $row['id']; ?>" 
+   class="btn btn-success btn-sm"
+   onclick="return confirm('Are you sure you want to mark this as reviewed?');">Mark as Reviewed</a>
+
+<a href="delete_feedback.php?id=<?php echo $row['id']; ?>" 
+   class="btn btn-danger btn-sm"
+   onclick="return confirm('Are you sure you want to delete this feedback? This action cannot be undone.');">Delete</a>
+
                         </td>
                     </tr>
                 <?php endwhile; ?>

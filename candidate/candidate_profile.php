@@ -4,35 +4,70 @@ include 'config.php'; // Ensure this includes the $conn variable
 
 if (!isset($_SESSION['candidate_email'])) {
     header("Location: candidate.php");
+    echo json_encode(['success' => false, 'message' => 'Not logged in']);
     exit();
 }
 
-if (isset($_SESSION['candidate_id'])) {
-    $candidate_id = $_SESSION['candidate_id'];
+$candidate_id = $_SESSION['candidate_id'];
 
-    // Prepare the SQL statement to fetch candidate details
-    $sql = "SELECT candidate_name, candidate_email, candidate_number, address, password FROM candidates WHERE candidate_id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $candidate_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
-        $candidate_name = $row['candidate_name'];
-        $candidate_email = $row['candidate_email'];
-        $candidate_number = $row['candidate_number'];
-        $address = $row['address'];
-        $current_hashed_password = $row['password'];
-    } else {
-        echo "Candidate not found.";
-        exit();
+if (isset($_FILES['profilePicture']) && $_FILES['profilePicture']['error'] == 0) {
+    $file = $_FILES['profilePicture'];
+    
+    // Define a directory to store uploaded images
+    $uploadDir = 'uploads/profile_pics/';
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true); // Create the directory if it doesn't exist
     }
-    $stmt->close();
+
+    // Get file extension and ensure it's an image
+    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+    $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+    if (in_array($fileExtension, $allowedExtensions)) {
+        // Generate a unique file name
+        $fileName = $uploadDir . 'candidate_' . $candidate_id . '.' . $fileExtension;
+        
+        // Move the file to the upload directory
+        if (move_uploaded_file($file['tmp_name'], $fileName)) {
+            // Update the candidate's profile picture in the database
+            $sql = "UPDATE candidates SET profile_pic = ? WHERE candidate_id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("si", $fileName, $candidate_id);
+            if ($stmt->execute()) {
+                echo json_encode(['success' => true, 'filePath' => $fileName]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error uploading file']);
+        }
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid file type']);
+    }
 } else {
-    echo "Candidate ID is not set in the session.";
+    echo json_encode(['success' => false, 'message' => 'No file uploaded']);
+}
+
+$sql = "SELECT candidate_name, candidate_email, candidate_number, address, profile_pic FROM candidates WHERE candidate_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $candidate_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows == 1) {
+    $row = $result->fetch_assoc();
+    $candidate_name = $row['candidate_name'];
+    $candidate_email = $row['candidate_email'];
+    $candidate_number = $row['candidate_number'];
+    $address = $row['address'];
+    $profile_pic = $row['profile_pic'];
+} else {
+    echo "Candidate not found.";
     exit();
 }
+$stmt->close();
+
+
 
 // Handle Profile Update Form Submission
 if (isset($_POST['name'], $_POST['email'], $_POST['number'], $_POST['address'])) {
@@ -186,6 +221,11 @@ if (isset($_POST['current_password'], $_POST['password'], $_POST['cpassword'])) 
             text-align: center;
             margin-bottom: 20px;
         }
+        .profile-picture-container input[type="file"] {
+    display: block;
+    margin-top: 10px;
+}
+
         .profile-picture-container img {
             width: 150px;
             height: 150px;
@@ -217,9 +257,7 @@ if (isset($_POST['current_password'], $_POST['password'], $_POST['cpassword'])) 
             color: white;
             font-size: 30px;
         }
-        .profile-picture-container input[type="file"] {
-            display: none;
-        }
+        
         .dropdown-menu {
             display: none;
             position: absolute;
@@ -231,6 +269,35 @@ if (isset($_POST['current_password'], $_POST['password'], $_POST['cpassword'])) 
         .profile-picture-container:hover.dropdown-menu {
             display: block;
         }
+        .profile-picture-container {
+            position: relative;
+            display: inline-block;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .profile-picture-container img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            transition: 0.3s;
+        }
+        .profile-picture-container:hover img {
+            opacity: 0.7;
+        }
+        .upload-label {
+            display: block;
+            margin-top: 10px;
+            background-color: #0275d8;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .upload-label:hover {
+            background-color: #025aa5;
+        }
+       
     </style>
 </head>
 <body>
@@ -245,7 +312,7 @@ if (isset($_POST['current_password'], $_POST['password'], $_POST['cpassword'])) 
             <div class="collapse navbar-collapse justify-content-end">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <span class="navbar-text">Welcome, <?php echo htmlspecialchars($_SESSION['email']); ?></span>
+                        <span class="navbar-text">Welcome, <?php echo htmlspecialchars($_SESSION['candidate_email']); ?></span>
                     </li>
                     <li class="nav-item dropdown ms-3">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -296,18 +363,19 @@ if (isset($_POST['current_password'], $_POST['password'], $_POST['cpassword'])) 
 
             <!-- Profile Picture Upload -->
             <div class="profile-picture-container">
-            <img src="current-profile-pic.png" alt="Current Profile Picture" id="profilePic">
-            <div class="overlay">
-                <span class="icon">&#128247;</span>
-            </div>
-            <div class="dropdown-menu">
-                <button class="dropdown-item" onclick="viewPhoto()">View Photo</button>
-                <label class="dropdown-item" for="profilePicture">Take Photo</label>
-                <label class="dropdown-item" for="profilePicture">Upload Photo</label>
-                <button class="dropdown-item" onclick="removePhoto()">Remove Photo</button>
-            </div>
-            <input type="file" name="profilePicture" id="profilePicture" onchange="uploadPhoto()">
-        </div>
+    <img src="<?php echo !empty($profile_pic) ? htmlspecialchars($profile_pic) : 'default_profile_pic.jpeg'; ?>" alt="Current Profile Picture" id="profilePic">
+    <div class="overlay">
+        <span class="icon">&#128247;</span>
+    </div>
+    <div class="dropdown-menu">
+        <button class="dropdown-item" onclick="viewPhoto()">View Photo</button>
+        <label class="dropdown-item" for="profilePicture">Upload Photo</label>
+        <button class="dropdown-item" onclick="removePhoto()">Remove Photo</button>
+    </div>
+    <!-- Updated to call the upload function properly -->
+    <input type="file" name="profilePicture" id="profilePicture" onchange="uploadPhoto()">
+</div>
+
 
 
             <div class="form-section">
@@ -385,14 +453,39 @@ if (isset($_POST['current_password'], $_POST['password'], $_POST['cpassword'])) 
         }
 
         function removePhoto() {
-            // Logic to remove the current profile picture
-            alert('Remove Photo clicked');
+        if (confirm('Are you sure you want to remove your profile picture?')) {
+            // Call a server-side script to remove the profile picture
+            alert('Profile picture removed!');
+            document.getElementById('profilePic').src = 'default-profile-pic.jpeg';
         }
+    }
 
-        function uploadPhoto() {
-            // Logic to handle the photo upload
-            alert('Photo Uploaded');
-        }
+    function uploadPhoto() {
+    var fileInput = document.getElementById('profilePicture');
+    var file = fileInput.files[0];
+
+    if (file) {
+        var formData = new FormData();
+        formData.append('profilePicture', file);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '', true); // Send the request to the same PHP file
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    document.getElementById('profilePic').src = response.filePath; // Update profile picture
+                    alert('Profile picture updated successfully!');
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            }
+        };
+        xhr.send(formData);
+    } else {
+        alert('No file selected!');
+    }
+}
 
     </script>
 

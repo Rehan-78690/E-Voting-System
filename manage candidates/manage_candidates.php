@@ -16,7 +16,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_candidate'])) {
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
     
     // Handle file upload for the symbol
-    $target_dir = "../uploads/";
+    $symbol = null;
+    if (!empty($_FILES["symbol"]["name"])) {
+    $target_dir = "../uploads/symbols/";
     $symbol = $target_dir . basename($_FILES["symbol"]["name"]);
     $symbol_file_type = strtolower(pathinfo($symbol, PATHINFO_EXTENSION));
 
@@ -27,6 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_candidate'])) {
         echo "Invalid symbol file type or size.";
         exit();
     }
+}
 
     // Insert data into the database
     $sql = "INSERT INTO candidates (candidate_name, candidate_email, password, department, candidate_role, symbol, status, created_at, updated_at)
@@ -37,6 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_candidate'])) {
 
     if ($stmt->execute()) {
         echo "New candidate added successfully";
+        header("Location: manage_candidates.php?success=1");
     } else {
         echo "Error: " . $stmt->error;
     }
@@ -45,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_candidate'])) {
 }
 
 // Fetch all candidates from the database and display them in a table
-$query = "SELECT candidate_id, candidate_name, candidate_email, candidate_number, address, manifesto, socialmedia_links, candidate_role, department, symbol FROM candidates";
+$query = "SELECT candidate_id, candidate_name, candidate_email, candidate_number, address, manifesto, socialmedia_links, candidate_role, department, symbol,status FROM candidates";
 $result = $conn->query($query);
 ?>
 
@@ -135,14 +139,20 @@ $result = $conn->query($query);
                             <td><?php echo htmlspecialchars($row['candidate_name']); ?></td>
                             <td><?php echo htmlspecialchars($row['candidate_role']); ?></td>
                             <td><?php echo htmlspecialchars($row['department']); ?></td>
-                            <td>Pending</td>
-                            <td><?php echo htmlspecialchars($row['symbol']); ?></td>
+                            <td><?php echo htmlspecialchars($row['status']); ?></td>
+                            <td>
+            <?php if (!empty($row['symbol'])): ?>
+                <img src="<?php echo "../uploads/symbols/" . htmlspecialchars(basename($row['symbol'])); ?>" alt="Candidate Symbol" style="width: 50px; height: 30px;">
+            <?php else: ?>
+                No symbol uploaded
+            <?php endif; ?>
+        </td>
                             <td>
                                 <button class="btn btn-sm btn-secondary view-btn" data-bs-toggle="modal" data-bs-target="#viewCandidateModal" data-candidate-id="<?php echo $row['candidate_id']; ?>">View</button>
 
                                 <button class="btn btn-sm btn-secondary edit-btn" data-bs-toggle="modal" data-bs-target="#editCandidateModal" data-candidate-id="<?php echo $row['candidate_id']; ?>">Edit</button>
 
-                                <form method="POST" action="delete_candidate.php" style="display:inline;">
+                                <form method="POST" action="delete_candidate.php" style="display:inline;"enctype="multipart/form-data"onsubmit="return confirmDelete();">
                                     <input type="hidden" name="candidate_id" value="<?php echo $row['candidate_id']; ?>">
                                     <button type="submit" class="btn btn-sm btn-danger">Remove</button>
                                 </form>
@@ -195,7 +205,7 @@ $result = $conn->query($query);
                         </div>
                         <div class="mb-3">
                             <label for="symbol" class="form-label">Symbol</label>
-                            <input type="file" class="form-control" id="symbol" name="symbol" required>
+                            <input type="file" class="form-control" id="symbol" name="symbol" >
                         </div>
                         <button type="submit" name="submit_candidate" class="btn btn-primary">Add Candidate</button>
                     </form>
@@ -314,6 +324,9 @@ $result = $conn->query($query);
                 document.getElementById('viewSocialmediaLinks').textContent = candidate.socialmedia_links;
             });
         });
+        function confirmDelete() {
+        return confirm('Are you sure you want to remove this candidate? This action cannot be undone.');
+    }
     </script>
 
 </body>

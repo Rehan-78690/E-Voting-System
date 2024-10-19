@@ -8,6 +8,7 @@ if (!isset($_SESSION['candidate_email'])) {
 }
 
 $voter_id = $_SESSION['candidate_id'];
+$election_id = $_POST['election_id'];
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Retrieve candidate ID from the form data
@@ -42,9 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $update_stmt->close();
     } else {
         // Candidate doesn't exist in votes table, insert a new record with the initial vote count of 1
-        $insert_sql = "INSERT INTO votes (candidate_id,candidate_name,role,department, total_votes) VALUES (?,?,?,?, 1)";
+        $insert_sql = "INSERT INTO votes (candidate_id,election_id,candidate_name,role,department, total_votes) VALUES (?,?,?,?,?, 1)";
         $insert_stmt = $conn->prepare($insert_sql);
-        $insert_stmt->bind_param("isss", $candidate_id,$candidate_name,$candidate_role,$candidate_department);
+        $insert_stmt->bind_param("iisss", $candidate_id,$election_id,$candidate_name,$candidate_role,$candidate_department);
 
         if ($insert_stmt->execute()) {
             echo "Vote recorded successfully!";

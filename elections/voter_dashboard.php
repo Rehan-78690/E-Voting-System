@@ -5,6 +5,11 @@ if (!isset($_SESSION['candidate_email'])) {
     header("Location: voter.php");
     exit();
 }
+$queri = "SELECT election_id, election_name FROM elections WHERE status = 'active'";
+$results = $conn->query($queri);
+
+// Check if there are any active elections
+
 $voter_id = $_SESSION['candidate_id'];
 $sql= "Select candidate_name, address, status from candidates where candidate_id =?";
 $stmt=$conn->prepare($sql);
@@ -245,7 +250,21 @@ $upcoming_election = $result->fetch_assoc();
                             <div class="card-body">
                                 <p>Upcoming Elections: <strong>2024 Senate Election</strong></p>
                                 <p>Candidate Information: <a href="#">View Candidates</a></p>
-                                <p>Ballot Measures: <a href="ballot.php">cast your vote</a></p>
+                                <?php
+                                if ($results->num_rows > 0) {
+                                    // Loop through each election and create a link to the ballot page
+                                    while ($rows = $results->fetch_assoc()) {
+                                        $election_id = $rows['election_id']; // Make sure election_id is defined here
+                                        $election_name = $rows['election_name'];?>
+<p>Ballot measures:  
+    <a href="ballot.php?election_id=<?php echo $election_id; ?>">Open Ballot for <?php echo htmlspecialchars($election_name); ?></a>
+</p>
+<?php
+                                    }
+                                } else {
+                                    echo "No active elections available.";
+                                }?>
+                              
                             </div>
                         </div>
                     </div>
@@ -275,7 +294,7 @@ $upcoming_election = $result->fetch_assoc();
                             </div>
                             <div class="card-body">
                                 <p>Last Election: <strong>2022 Presidential Election</strong></p>
-                                <p>Vote Confirmation: <a href="#">View Receipt</a></p>
+                                <p>Vote Confirmation: <a href="voting_history.php">View Receipt</a></p>
                             </div>
                         </div>
                     </div>
@@ -302,9 +321,9 @@ $upcoming_election = $result->fetch_assoc();
                                 Educational Resources
                             </div>
                             <div class="card-body">
-                                <p><a href="#">How to Vote</a></p>
+                                <p><a href="how_to_vote.php">How to Vote</a></p>
                                 <p><a href="#">Voter Rights</a></p>
-                                <p><a href="#">FAQs</a></p>
+                                <p><a href="FAQs.php">FAQs</a></p>
                             </div>
                         </div>
                     </div>

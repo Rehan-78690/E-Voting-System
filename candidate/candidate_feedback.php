@@ -22,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_feedback'])) {
 
     if ($stmt->execute()) {
         $alert_message = "Your feedback has been submitted successfully!";
+        header("location:candidate_feedback.php");
     } else {
         $alert_message = "Error submitting feedback: " . $stmt->error;
     }

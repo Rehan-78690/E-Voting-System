@@ -4,8 +4,8 @@ session_start();
 if (!isset($_SESSION['candidate_email'])) {
     header("Location: candidate.php");
     exit();
-
 }
+
 $sql = "SELECT election_date, start_time, end_time, status FROM elections WHERE status = 'upcoming' ORDER BY election_date ASC LIMIT 1";
 $result = $conn->query($sql);
 $upcoming_election = $result->fetch_assoc();
@@ -22,7 +22,7 @@ $upcoming_election = $result->fetch_assoc();
         body, html {
             height: 100%;
             background-color: #f0f4f8;
-            font-family: 'Poppins', sans-serif;
+            font-family: "Open Sans", sans-serif;
             color: #333;
             margin: 0;
             padding: 0;
@@ -30,7 +30,7 @@ $upcoming_election = $result->fetch_assoc();
 
         .container-fluid {
             min-height: 100%;
-            padding-bottom: 60px; /* Make space for the footer */
+            padding-bottom: 60px;
         }
 
         .dashboard-content {
@@ -41,13 +41,12 @@ $upcoming_election = $result->fetch_assoc();
             min-height: calc(100vh - 60px);
         }
 
-        /* Offcanvas menu specific styling */
         .offcanvas {
             width: 250px;
         }
 
         .dashboard-pushed {
-            transform: translateX(150px); /* Push content to the right */
+            transform: translateX(150px);
         }
 
         .card {
@@ -95,13 +94,14 @@ $upcoming_election = $result->fetch_assoc();
             font-weight: bold;
         }
 
-        /* Navbar styling */
         .navbar {
             background-color: #2b3e50;
         }
+
         .navbar-pushed {
-            transform: translateX(150px); 
+            transform: translateX(150px);
         }
+
         .navbar-brand {
             font-size: 1.3rem;
             color: #fff;
@@ -121,7 +121,6 @@ $upcoming_election = $result->fetch_assoc();
             background-color: #ff4747;
         }
 
-        /* Button Styling */
         .btn-primary {
             background-color: #ff6b6b;
             border: none;
@@ -134,7 +133,6 @@ $upcoming_election = $result->fetch_assoc();
             background-color: #ff4747;
         }
 
-        /* Footer styling */
         .footer {
             background-color: #1e3d58;
             color: #ffffff;
@@ -160,20 +158,28 @@ $upcoming_election = $result->fetch_assoc();
             }
         }
 
-        /* Fix top-right heading visibility */
         .navbar-brand {
-            width: calc(100% - 150px); /* Ensures text doesn't overflow when the menu is pushed */
+            width: calc(100% - 150px);
         }
     </style>
 </head>
 <body>
+<div class="notification-area">
+    <button id="notificationBtn" class="btn btn-secondary">
+        <i class="fa fa-bell"></i> Notifications (<span id="notificationCount">0</span>)
+    </button>
+    <ul id="notifications">
+        <li>No notifications</li>
+    </ul>
+</div>
+
+<script src="../notification system/app.js"></script>
 
 <div class="container-fluid">
     <div class="row">
         <!-- Navbar for Off-Canvas Trigger -->
         <nav class="navbar navbar-dark">
             <div class="container-fluid">
-                <!-- Flex container for Menu button and brand -->
                 <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar">
                     &#9776; Menu
                 </button>
@@ -197,8 +203,11 @@ $upcoming_election = $result->fetch_assoc();
                 <a class="nav-link" href="document_submit.php">
                     <span class="icon-large">&#x1F4C3;</span> Document Submission
                 </a>
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="view_symbol.php">
                     <span class="icon-large">&#x1F4CA;</span> View Symbol
+                </a>
+                <a class="nav-link" href="view_voting_history.php">
+                    <span class="icon-large">&#x1F4D1;</span> Voting History
                 </a>
                 <a class="nav-link" href="candidate_feedback.php">
                     <span class="icon-large">&#x1F4AC;</span> Report Issues
@@ -241,11 +250,30 @@ $upcoming_election = $result->fetch_assoc();
                             <div class="card-header">View Symbol</div>
                             <div class="card-body">
                                 <p>View the symbol assigned to you for the election.</p>
-                                <a href="#" class="btn btn-primary">View Symbol</a>
+                                <a href="view_symbol.php" class="btn btn-primary">View Symbol</a>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Voting History Card -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card">
+                            <div class="card-header">Results</div>
+                            <div class="card-body">
+                                <p>Check the results of the elections, see leaderboards</p>
+                                <a href="../voting_result.php" class="btn btn-primary">View Result</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card">
+                            <div class="card-header">Voting History</div>
+                            <div class="card-body">
+                                <p>View your voting history for previous elections.</p>
+                                <a href="voting_history.php" class="btn btn-primary">View History</a>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Report Issues Card -->
                     <div class="col-md-6 col-lg-4">
                         <div class="card">
@@ -258,24 +286,23 @@ $upcoming_election = $result->fetch_assoc();
                     </div>
                 </div>
             </div>
-            <div class="container mt-5">
-    <?php if ($upcoming_election): ?>
-        <div class="alert alert-info">
-            <h4>Upcoming Election</h4>
-            <p><strong>Date:</strong> <?php echo $upcoming_election['election_date']; ?></p>
-            <p><strong>Time:</strong> <?php echo $upcoming_election['start_time'] . ' to ' . $upcoming_election['end_time']; ?></p>
-            <p>Please ensure your documents are submitted and verified before the election date.</p>
-        </div>
-    <?php else: ?>
-        <div class="alert alert-warning">
-            <p>No upcoming elections at the moment.</p>
-        </div>
-    <?php endif; ?>
 
-</div>
+            <div class="container mt-5">
+                <?php if ($upcoming_election): ?>
+                    <div class="alert alert-info">
+                        <h4>Upcoming Election</h4>
+                        <p><strong>Date:</strong> <?php echo $upcoming_election['election_date']; ?></p>
+                        <p><strong>Time:</strong> <?php echo $upcoming_election['start_time'] . ' to ' . $upcoming_election['end_time']; ?></p>
+                        <p>Please ensure your documents are submitted and verified before the election date.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="alert alert-warning">
+                        <p>No upcoming elections at the moment.</p>
+                    </div>
+                <?php endif; ?>
+            </div>
         </main>
     </div>
-  
 </div>
 
 <!-- Footer -->
@@ -290,18 +317,18 @@ $upcoming_election = $result->fetch_assoc();
         const offcanvasSidebar = document.getElementById('offcanvasSidebar');
         const mainContent = document.querySelector('main');
         const footer = document.querySelector('.footer');
-        const navbar = document.querySelector('.navbar'); // Select the navbar
+        const navbar = document.querySelector('.navbar');
 
         offcanvasSidebar.addEventListener('show.bs.offcanvas', function () {
             mainContent.classList.add('dashboard-pushed');
             footer.classList.add('footer-pushed');
-            navbar.classList.add('navbar-pushed'); // Add the class to the navbar when the sidebar is open
+            navbar.classList.add('navbar-pushed');
         });
 
         offcanvasSidebar.addEventListener('hide.bs.offcanvas', function () {
             mainContent.classList.remove('dashboard-pushed');
             footer.classList.remove('footer-pushed');
-            navbar.classList.remove('navbar-pushed');  // Remove the class when the sidebar is closed
+            navbar.classList.remove('navbar-pushed');
         });
     });
 </script>

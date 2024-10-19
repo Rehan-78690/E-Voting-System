@@ -72,12 +72,11 @@ if ($total_votes_row) {
     $total_votes = 0; // No votes found
 }
 
-// Debugging output
-echo "Total Votes: " . $total_votes;
+// echo "Total Votes: " . $total_votes;
 
-// Fetch voter turnout (assuming total registered voters is known)
 $total_voters = 1000; // Replace with actual number
 $voter_turnout = ($total_votes / $total_voters) * 100;
+
 // Fetch candidates and their vote counts
 $candidates_query = "
    SELECT c.candidate_id, c.candidate_name, c.profile_pic, c.candidate_role, c.department,SUM(v.total_votes) AS vote_count
@@ -122,100 +121,174 @@ foreach ($candidates as $candidate) {
     <!-- Include CountUp.js for animated counters -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/countup.js/2.0.7/countUp.min.js"></script>
     <style>
-        body {
-            font-family: poppins;
-            background-color: #f7f7f7;
-            margin: 0;
-            padding: 20px;
-        }
-        .winner-highlight {
-            background-color: #fff;
-            padding: 20px;
-            text-align: center;
-            position: relative;
-        }
-        .winner-highlight img {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-        }
-        .winner-highlight h2 {
-            margin: 10px 0;
-        }
-        .badge {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 50px;
-        }
-        .infographic {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-        }
-        .stat {
-            background-color: #fff;
-            padding: 20px;
-            text-align: center;
-            flex: 1;
-            margin: 0 10px;
-        }
-        .stat .value {
-            font-size: 40px;
-            color: #333;
-        }
-        .leaderboard {
-            background-color: #fff;
-            padding: 20px;
-        }
-        .candidate {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .candidate img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-        }
-        .candidate .name {
-            flex: 1;
-            margin-left: 10px;
-        }
-        .candidate .votes {
-            font-weight: bold;
-        }
-        .badge-gold {
-            color: gold;
-        }
-        .badge-silver {
-            color: silver;
-        }
-        .badge-bronze {
-            color: #cd7f32;
-        }
-        .download-btn {
-            margin: 20px 0;
-            text-align: center;
-        }
-        .download-btn button {
-            padding: 10px 20px;
-            font-size: 16px;
-        }
-        .chart-container {
-            width: 60%;
-            margin: auto;
-        }
+       body {
+    font-family: 'Poppins', sans-serif; /* Ensure you're using a modern and clean font */
+    background-color: #f7f7f7;
+    margin: 0;
+    padding: 20px;
+}
+
+h2 {
+    font-size: 26px; /* Slightly larger for emphasis */
+    font-weight: 600;
+    color: #333; /* Darker color for visibility */
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 18px; /* Maintain readability for all paragraphs */
+    color: #555; /* Subtle color for supporting text */
+    margin: 10px 0;
+}
+
+.winner-highlight {
+    background-color: #fff;
+    padding: 30px;
+    text-align: center;
+    border-radius: 10px; /* Adding slight rounding for a modern look */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for emphasis */
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.winner-highlight img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a shadow to the profile picture */
+}
+
+.badge {
+    font-size: 24px; /* Larger for better visibility */
+    margin-right: 10px; /* Adds space between the badge and the candidate's profile picture */
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.infographic {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+
+.stat {
+    background-color: #fff;
+    padding: 20px;
+    text-align: center;
+    flex: 1;
+    margin: 0 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Slight shadow for better separation */
+}
+
+.stat .value {
+    font-size: 38px; /* Big and bold for clear visibility */
+    color: #333;
+    font-weight: 600;
+}
+
+.stat .label {
+    font-size: 16px;
+    color: #777;
+    margin-top: 10px;
+}
+
+.leaderboard {
+    background-color: #fff;
+    padding: 20px;
+    margin-top: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Subtle shadow for leaderboard */
+}
+
+.candidate {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee; /* Add subtle divider between candidates */
+}
+
+.candidate img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Add shadow for better emphasis */
+}
+
+.candidate .name {
+    flex: 1;
+    font-size: 20px; /* Larger for better readability */
+    color: #333;
+    font-weight: 500;
+    margin-left: 10px;
+}
+
+.candidate .votes {
+    font-size: 18px;
+    font-weight: bold;
+    color: #555;
+}
+
+.badge-gold {
+    color: gold;
+}
+
+.badge-silver {
+    color: silver;
+}
+
+.badge-bronze {
+    color: #cd7f32;
+}
+
+.download-btn {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.download-btn button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.download-btn button:hover {
+    background-color: #0056b3;
+}
+
+.chart-container {
+    width: 60%;
+    margin: 30px auto; /* Add margin for proper spacing */
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Add shadow for better emphasis */
+}
+
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/countup.js/1.9.3/countUp.min.js"></script>
+
 </head>
 <body>
 
 <!-- Winner Highlight Section -->
 <div class="winner-highlight">
-    <div class="badge badge-gold">🏆</div>
-    <img src="<?php echo $top_candidates[0]['profile_pic']; ?>" alt="Winner's Photo">
-    <h2>Congratulations to <?php echo $top_candidates[0]['candidate_name']; ?></h2>
-    <p>Total Votes: <span id="winner-votes"><?php echo $total_votes;?></span></p>
+    <!-- <div class="badge badge-gold" style="align-items: center;">🏆</div> -->
+    <!-- Winner's Profile Picture -->
+    <?php
+    $winner_profile_image = !empty($top_candidates[0]['profile_pic']) ? 'candidate/' . $top_candidates[0]['profile_pic'] : 'candidate/uploads/profile_pics/default-profile-pic.jpeg';
+    ?>
+    <img src="<?php echo htmlspecialchars($winner_profile_image); ?>" alt="Candidate Photo">
+
+    <h2>Congratulations to <?php echo htmlspecialchars($top_candidates[0]['candidate_name']); ?></h2>
+    <p>Total Votes: <span id="winner-votes"><?php echo $total_votes; ?></span></p>
     <p>Winning Percentage: <?php echo number_format(($top_candidates[0]['vote_count'] / $total_votes) * 100, 2); ?>%</p>
 </div>
 
@@ -254,27 +327,34 @@ foreach ($candidates as $candidate) {
 
 <!-- Leaderboard Section -->
 <div class="leaderboard">
+ 
     <h2>Election Leaderboard</h2>
     <?php foreach ($candidates as $index => $candidate): ?>
-        <div class="candidate">
-            <?php if ($index == 0): ?>
-                <div class="badge badge-gold">🥇</div>
-            <?php elseif ($index == 1): ?>
-                <div class="badge badge-silver">🥈</div>
-            <?php elseif ($index == 2): ?>
-                <div class="badge badge-bronze">🥉</div>
-            <?php else: ?>
-                <div class="rank"><?php echo $index + 1; ?></div>
-            <?php endif; ?>
-            <img src="<?php echo $candidate['profile_pic']; ?>" alt="Candidate Photo">
-            <div class="name"><?php echo $candidate['candidate_name']; ?></div>
-            <div class="votes" id="vote-count-<?php echo $candidate['candidate_id']; ?>"><?php echo $candidate['vote_count']??0; ?></div>
-        </div>
-        <script>
-            const voteCount<?php echo $candidate['candidate_id']; ?> = new CountUp('vote-count-<?php echo $candidate['candidate_id']; ?>', <?php echo $candidate['vote_count']?? 0; ?>);
-            voteCount<?php echo $candidate['candidate_id']; ?>.start();
-        </script>
+    <div class="candidate" style="display: flex; align-items: center; margin-bottom: 10px;">
+        <?php if ($index == 0): ?>
+            <div class="badge badge-gold" style="margin-right: 15px;margin-left: 10px;">🥇</div>
+        <?php elseif ($index == 1): ?>
+            <div class="badge badge-silver" style="margin-right: 15px;margin-left: 10px;">🥈</div>
+        <?php elseif ($index == 2): ?>
+            <div class="badge badge-bronze" style="margin-right: 15px;margin-left: 10px;">🥉</div>
+        <?php else: ?>
+            <div class="rank" style="margin-right: 25px;margin-left: 20px;"><?php echo $index + 1; ?></div>
+        <?php endif; ?>
+        <!-- Display Candidate's Profile Picture -->
+        <?php
+        $candidate_profile_image = !empty($candidate['profile_pic']) ? 'candidate/' . $candidate['profile_pic'] : 'candidate/uploads/profile_pics/default-profile-pic.jpeg';
+        ?>
+        <img src="<?php echo htmlspecialchars($candidate_profile_image); ?>" alt="Candidate Photo">
+
+        <div class="name"><?php echo htmlspecialchars($candidate['candidate_name']); ?></div>
+        <div class="votes" id="vote-count-<?php echo $candidate['candidate_id']; ?>"><?php echo $candidate['vote_count'] ?? 0; ?></div>
+    </div>
+    <script>
+        const voteCount<?php echo $candidate['candidate_id']; ?> = new CountUp('vote-count-<?php echo $candidate['candidate_id']; ?>', <?php echo $candidate['vote_count'] ?? 0; ?>);
+        voteCount<?php echo $candidate['candidate_id']; ?>.start();
+    </script>
     <?php endforeach; ?>
+
 </div>
 
 <!-- Chart Section -->
