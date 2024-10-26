@@ -1,5 +1,5 @@
 <?php
-include 'config.php'; // Include your database configuration file
+include '../config.php'; // Include your database configuration file
 
 // Fetch upcoming elections
 $election_query = "SELECT election_id, election_name, election_date FROM elections WHERE status = 'upcoming'";
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['allocate_symbol'])) {
     if (isset($_FILES['symbol_image']) && $_FILES['symbol_image']['error'] == 0) {
         $image_name = $_FILES['symbol_image']['name'];
         $image_tmp_name = $_FILES['symbol_image']['tmp_name'];
-        $upload_dir = "uploads/symbols/"; // Directory to store symbols
+        $upload_dir = "../uploads/symbols/"; // Directory to store symbols
 
         // Create the directory if it doesn't exist
         if (!is_dir($upload_dir)) {

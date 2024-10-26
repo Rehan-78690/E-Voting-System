@@ -1,5 +1,5 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
     background-color: #2b3e50;
     display: flex;
     justify-content: center;
@@ -147,16 +147,18 @@ body {
     }
 
     .form-inline {
-        flex-direction: column;
+        flex-direction: row;
         align-items: flex-start;
     }
 
     .form-inline label,
     .form-inline a,
     .form-inline button {
-        width: 100%;
-        margin: 5px 0;
+        display: flex;
+        width: 25%;
+        margin: 5px 0 0px 10px;
     }
+    
 }
 
 @media (max-width: 480px) {
@@ -173,4 +175,5 @@ body {
         font-size: 14px;
         padding: 8px;
     }
+    
 }

@@ -60,9 +60,11 @@ header("Refresh: $delay; url=$redirect_url");
 }
 
 $query = "SELECT c.candidate_id, c.candidate_name, c.candidate_role, c.department, c.symbol, IFNULL(v.total_votes, 0) AS total_votes
-          FROM candidates c
-          LEFT JOIN votes v ON c.candidate_id = v.candidate_id AND v.election_id = ?
-          ORDER BY c.candidate_name";
+FROM candidates c
+LEFT JOIN votes v ON c.candidate_id = v.candidate_id AND v.election_id = ?
+INNER JOIN candidate_documents cd ON c.candidate_id = cd.candidate_id
+WHERE c.role = 'candidate' AND c.status = 'approved' AND cd.verification_status = 'verified'
+ORDER BY c.candidate_name";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $election_id);
 $stmt->execute();

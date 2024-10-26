@@ -1,15 +1,28 @@
 <?php
 session_start();
 include 'config.php'; 
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Verification</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+</head>
+<body>
+<?php
 if (!isset($_SESSION['email'])) {
     header("Location: admin.php");
     exit();
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Get data from the form
+   
     $document_id = intval($_POST['document_id']);
     $verification_status = $_POST['verification_status'];
     $admin_id = $_SESSION['admin_id']; 
@@ -28,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->close();
 }
 
-// Fetch all pending documents
+
 $sql = "SELECT cd.id, c.candidate_name, cd.document_path, cd.submission_date, cd.verification_status 
         FROM candidate_documents cd
         JOIN candidates c ON cd.candidate_id = c.candidate_id
@@ -37,17 +50,48 @@ $result = $conn->query($sql);
 
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Verification</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
 
-<div class="container">
+   <!-- Sidebar -->
+   <div class="sidebar closed" id="sidebar">
+        <h5>Dashboard Menu</h5>
+        <!-- <a href="#" class="d-block mb-2" id="sidebarToggle">☰ Toggle Sidebar</a> -->
+        <a href="welcome.php"> Dashboard</a>
+        <a href="manage%20users/approval_requests.php"> Approval requests</a>
+        <a href="manage%20users/manage%20candidates/manage_candidates.php">Candidate Management</a>
+        <a href="admin_profile.php"> Profile Management</a>
+        
+        <a href="manage%20users/symbol_allocation.php"> Symbol Allocation</a>
+        <a href="manage_feedback.php"> Feedback Management</a>
+        <a href="#"> Settings</a>
+        <a href="logout.php">Sign Out</a>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="javascript:void(0);" id="navbarToggle">☰</a> 
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="welcome.php">Home</a>
+                    </li>
+                </ul>
+                <!-- Search form -->
+                <form class="d-flex">
+                <input class="form-control me-2" type="text" id="searchInput" placeholder="Search..." aria-label="Search">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content" id="mainContent" >
     <h1 class="mt-4">Admin Document Verification</h1>
 
     <?php if ($result->num_rows > 0): ?>
@@ -81,14 +125,23 @@ $result = $conn->query($sql);
                             </form>
                         </td>
                     </tr>
+                    
                 <?php endwhile; ?>
             </tbody>
         </table>
     <?php else: ?>
         <p>No documents pending verification.</p>
     <?php endif; ?>
+    <a href="verified_documents.php"> view verified documennts</a>
 </div>
-<script>
+
+
+<a href="verified_documents.php"> view verified documennts</a>
+<footer>
+        <p>&copy; 2024 E-Voting UPR. All rights reserved.</p>
+        <p>Designed for University of Poonch Rawalakot Elections</p>
+    </footer>
+    <script>
     document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', function(event) {
             if (!confirm('Are you sure you want to update the verification status?')) {
@@ -97,10 +150,6 @@ $result = $conn->query($sql);
         });
     });
 </script>
-<?php 
-
-?>
-<a href="verified_documents.php"> view verified documennts</a>
-
+<script src="scripts.js"></script>
 </body>
 </html>

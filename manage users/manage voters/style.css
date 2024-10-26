@@ -1,0 +1,91 @@
+
+body {
+font-family: Arial, sans-serif;
+background-color: #f8f9fa;
+margin: 0;
+padding: 0;
+}
+
+.content {
+padding: 20px;
+margin-top: 60px;
+}
+
+.table-container {
+margin-top: 20px;
+overflow-x: auto; /* Allows the table to be scrollable on smaller screens */
+}
+
+table {
+width: 100%; /* Make sure the table takes the full width */
+min-width: 600px; /* Ensure the table doesn't get too narrow */
+}
+
+th, td {
+white-space: nowrap; /* Prevent text from breaking onto multiple lines */
+text-align: left;
+}
+
+.modal-dialog {
+max-width: 90%;
+width: auto;
+margin: 1.75rem auto;
+}
+
+@media (max-width: 768px) {
+.modal-dialog {
+max-width: 100%;
+margin: 0.5rem;
+}
+
+.modal-body {
+padding: 10px;
+}
+
+.modal-header {
+padding: 10px;
+}
+
+.modal-footer {
+padding: 10px;
+}
+
+/* Stack the label and field vertically on small screens */
+.form-label,
+.form-control {
+width: 100%;
+display: block;
+}
+
+/* Improve spacing and readability */
+.form-label {
+margin-bottom: 5px;
+}
+
+.form-control {
+margin-bottom: 15px;
+}
+}
+
+#icon-ham {
+display: block;
+background-color: rgb(119, 106, 100);
+}
+
+.navbar {
+padding: 0.5rem 1rem;
+}
+
+.offcanvas-body {
+padding-top: 20px;
+}
+
+@media (max-width: 768px) {
+.navbar-brand {
+font-size: 1.2rem;
+}
+
+.offcanvas-body {
+padding: 10px;
+}
+}

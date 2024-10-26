@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+body {
+    margin-top: 20px;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    padding-top: 56px;
+}
+.navbar-brand {
+    font-size: 1.5rem;
+    color: #007bff !important;
+}
+.content {
+    padding: 20px;
+    margin-left: 250px;
+    transition: all 0.3s ease;
+    min-height: calc(100vh - 112px); /* Adjust for navbar and footer height */
+}
+.content.no-sidebar {
+    margin-left: 0;
+}
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100vh;
+    background-color:#212529;
+    color: white;
+    padding-top: 20px;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+.sidebar h5 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: white;
+}
+.sidebar a {
+    padding: 10px 15px;
+    display: block;
+    color: white;
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s;
+}
+.sidebar a:hover {
+    background-color: #0056b3; /* Red color on hover */
+    color: white;
+}
+.sidebar.closed {
+    left: -250px;
+}
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 250px;
+    width: calc(100% - 250px);
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}
+.overlay.active {
+    display: block;
+}
+.sidebar.closed + .overlay {
+    left: 0;
+    width: 100%;
+}
+footer {
+    background-color: #212529;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
+@media (max-width: 768px) {
+    .sidebar {
+        left: -250px;
+    }
+    .sidebar.open {
+        left: 0;
+    }
+    .content {
+        margin-left: 0;
+    }
+    .overlay.active {
+        display: block;
+    }
+}

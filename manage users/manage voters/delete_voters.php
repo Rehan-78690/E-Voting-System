@@ -1,5 +1,5 @@
 <?php
-include '../config.php';
+include '../../config.php';
 session_start();
 
 // Check if the user is logged in
@@ -27,12 +27,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['candidate_id'])) {
 
     // Execute the SQL statement
     if ($stmt->execute()) {
-        echo "Candidate deleted successfully.";
+        echo "voter deleted successfully.";
         // Optionally redirect back to the manage candidates page
-        header("Location: manage_candidates.php");
+        header("Location: manage_voters.php");
         exit();
     } else {
-        echo "Error deleting candidate: " . $stmt->error;
+        echo "Error deleting voter: " . $stmt->error;
     }
 
     // Close the statement

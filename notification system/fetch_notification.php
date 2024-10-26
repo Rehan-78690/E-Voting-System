@@ -4,43 +4,31 @@ include 'config.php';
 // Check if the connection is successful
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
-} else {
-    echo "Connected to the database.<br>";
 }
 
+// Fetch Notifications
 function fetchNotifications() {
     global $conn;
-    $sql = "SELECT * FROM notifications"; 
+    $sql = "SELECT * FROM notifications";
     $result = $conn->query($sql);
+
     if (!$result) {
-        die("Query failed: " . $conn->error);
+        die(json_encode(['status' => 'error', 'message' => 'Query failed: ' . $conn->error]));
     }
-    if ($result->num_rows > 0) {
-        echo "Number of notifications fetched: " . $result->num_rows . "<br>";
-    } else {
-        echo "No notifications found.<br>";
-    }
+
     $notifications = [];
     while ($row = $result->fetch_assoc()) {
         $notifications[] = $row;
     }
-    // Output the array for debugging purposes
-    echo '<pre>';
-    print_r($notifications);
-    echo '</pre>';
 
-    echo json_encode($notifications); 
+    // Send JSON response
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'success', 'data' => $notifications]);
 }
 
-// Example usage:
-if ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'GET') {
-
-    ob_start();  // Start output buffering
-    fetchNotifications(); 
-
-    ob_end_clean();  // End output buffering and send content to the client
-    ob_flush();  // Flush output buffer
+if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+    fetchNotifications();
 } else {
-    echo "Invalid request method. Please use POST to fetch notifications.<br>";
+    echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
 }
 ?>

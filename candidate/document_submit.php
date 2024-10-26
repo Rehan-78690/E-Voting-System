@@ -11,7 +11,7 @@ $result = mysqli_query($conn, $election_check);
 if (mysqli_num_rows($result) > 0) {
     $row = $result->fetch_assoc();
     $election_status = $row['status'];
-    if ($election_status !== 'upcoming') {
+    if ($election_status == 'inactive') {
         echo "Elections are inactive at the moment .You will be notified via email, when to submit the documents";
         $delay=2;
         header("refresh:$delay;url=candidate_dashboard.php");

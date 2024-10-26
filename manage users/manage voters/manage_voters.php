@@ -1,8 +1,8 @@
 <?php
-include "../config.php";
+include "../../config.php";
 session_start();
 if (!isset($_SESSION['email'])) {
-    header("Location: ../admin.php");
+    header("Location: ../../admin.php");
     exit();
 }
 
@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_candidate'])) {
     // Handle file upload for the symbol
     $symbol = null;
     if (!empty($_FILES["symbol"]["name"])) {
-    $target_dir = "../uploads/symbols/";
+    $target_dir = "../../uploads/symbols/";
     $symbol = $target_dir . basename($_FILES["symbol"]["name"]);
     $symbol_file_type = strtolower(pathinfo($symbol, PATHINFO_EXTENSION));
 
@@ -32,15 +32,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_candidate'])) {
 }
 
     // Insert data into the database
-    $sql = "INSERT INTO candidates (candidate_name, candidate_email, password, department, candidate_role, symbol, status, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW(), NOW())";
+    $sql = "INSERT INTO candidates (candidate_name, candidate_email, password, department, candidate_role, symbol, status,role, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, 'Pending','voter',NOW(), NOW())";
 
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ssssss", $candidate_name, $candidate_email, $password, $candidate_department, $candidate_role, $symbol);
 
     if ($stmt->execute()) {
-        echo "New candidate added successfully";
-        header("Location: manage_candidates.php?success=1");
+        echo "New  v Voted added successfully";
+        header("Location: manage_voters.php?success=1");
     } else {
         echo "Error: " . $stmt->error;
     }
@@ -49,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_candidate'])) {
 }
 
 // Fetch all candidates from the database and display them in a table
-$query = "SELECT candidate_id, candidate_name, candidate_email, candidate_number, address, manifesto, socialmedia_links, candidate_role, department, symbol,status FROM candidates";
+$query = "SELECT candidate_id, candidate_name, candidate_email, candidate_number, address, manifesto, socialmedia_links, candidate_role, department FROM candidates where role ='voter' AND status='approved'";
 $result = $conn->query($query);
 ?>
 
@@ -94,11 +94,11 @@ $result = $conn->query($query);
     <!-- Main Content -->
     <div class="content">
         <div class="container">
-            <h1>Candidate Management</h1>
+            <h1>Voter Management</h1>
 
             <!-- Add New Candidate Button -->
             <div class="d-flex justify-content-end mb-3">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCandidateModal">Add New Candidate</button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCandidateModal">Add New Voter</button>
             </div>
 
             <script>
@@ -110,11 +110,9 @@ $result = $conn->query($query);
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
-                            <th>Candidate Name</th>
+                            <th>Voter Name</th>
                             <th>Role</th>
                             <th>Department</th>
-                            <th>Status</th>
-                            <th>Symbol</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -139,20 +137,13 @@ $result = $conn->query($query);
                             <td><?php echo htmlspecialchars($row['candidate_name']); ?></td>
                             <td><?php echo htmlspecialchars($row['candidate_role']); ?></td>
                             <td><?php echo htmlspecialchars($row['department']); ?></td>
-                            <td><?php echo htmlspecialchars($row['status']); ?></td>
-                            <td>
-            <?php if (!empty($row['symbol'])): ?>
-                <img src="<?php echo "../uploads/symbols/" . htmlspecialchars(basename($row['symbol'])); ?>" alt="Candidate Symbol" style="width: 50px; height: 30px;">
-            <?php else: ?>
-                No symbol uploaded
-            <?php endif; ?>
-        </td>
+                           
                             <td>
                                 <button class="btn btn-sm btn-secondary view-btn" data-bs-toggle="modal" data-bs-target="#viewCandidateModal" data-candidate-id="<?php echo $row['candidate_id']; ?>">View</button>
 
                                 <button class="btn btn-sm btn-secondary edit-btn" data-bs-toggle="modal" data-bs-target="#editCandidateModal" data-candidate-id="<?php echo $row['candidate_id']; ?>">Edit</button>
 
-                                <form method="POST" action="delete_candidate.php" style="display:inline;"enctype="multipart/form-data"onsubmit="return confirmDelete();">
+                                <form method="POST" action="delete_voter.php" style="display:inline;"enctype="multipart/form-data"onsubmit="return confirmDelete();">
                                     <input type="hidden" name="candidate_id" value="<?php echo $row['candidate_id']; ?>">
                                     <button type="submit" class="btn btn-sm btn-danger">Remove</button>
                                 </form>
@@ -161,7 +152,7 @@ $result = $conn->query($query);
                     <?php
                         }
                     } else {
-                        echo "<tr><td colspan='6'>No candidates found.</td></tr>";
+                        echo "<tr><td colspan='6'>No Voters found.</td></tr>";
                     }
                     ?>
                     </tbody>
@@ -207,7 +198,7 @@ $result = $conn->query($query);
                             <label for="symbol" class="form-label">Symbol</label>
                             <input type="file" class="form-control" id="symbol" name="symbol" >
                         </div>
-                        <button type="submit" name="submit_candidate" class="btn btn-primary">Add Candidate</button>
+                        <button type="submit" name="submit_candidate" class="btn btn-primary">Add voter</button>
                     </form>
                 </div>
             </div>
@@ -223,7 +214,7 @@ $result = $conn->query($query);
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="editCandidateForm" method="POST" enctype="multipart/form-data" action="edit_candidate.php">
+                    <form id="editCandidateForm" method="POST" enctype="multipart/form-data" action="edit_voters.php">
                         <input type="hidden" name="candidate_id" id="editCandidateId"> 
                         <div class="mb-3">
                             <label for="editCandidateName" class="form-label">Full Name</label>
@@ -234,6 +225,7 @@ $result = $conn->query($query);
                             <select class="form-select" id="editCandidateRole" name="candidate_role" required>
                                 <option value="Lecturer">Lecturer</option>
                                 <option value="Professor">Professor</option>
+                                <option value="Assistant-Professor">Assistant-Professor</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -325,7 +317,7 @@ $result = $conn->query($query);
             });
         });
         function confirmDelete() {
-        return confirm('Are you sure you want to remove this candidate? This action cannot be undone.');
+        return confirm('Are you sure you want to remove this voter? This action cannot be undone.');
     }
     </script>
 
