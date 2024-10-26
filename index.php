@@ -173,7 +173,8 @@
                 <div class="carousel-caption">
                     <h1>Welcome to Secure E-Voting!</h1>
                     <p>Experience a faster, safer, and more convenient way to vote.</p>
-                    <a href="admin.php" class="btn btn-custom mb-3">Get Started</a>
+                    <a href="candidate/signup.php" class="btn btn-custom mb-3">Get Started</a>
+                    <a href="admin.php" class="btn-skip">Skip to Login</a>
                    
                 </div>
             </div>
@@ -184,7 +185,8 @@
                 <div class="carousel-caption">
                     <h1>Why E-Voting?</h1>
                     <p>Convenient, fast, and secure voting from anywhere.</p>
-                    <a href="admin.php" class="btn btn-custom mb-3">Get Started</a>
+                    <a href="candidate/signup.php" class="btn btn-custom mb-3">Get Started</a>
+                    <a href="admin.php" class="btn-skip">Skip to Login</a>
                    
                 </div>
             </div>
@@ -195,8 +197,8 @@
                 <div class="carousel-caption">
                     <h1>How It Works</h1>
                     <p>Log in, select an election, and cast your vote securely.</p>
-                    <a href="admin.php" class="btn btn-custom mb-3">Get Started</a>
-                 
+                    <a href="candidate/signup.php" class="btn btn-custom mb-3">Get Started</a>
+                    <a href="admin.php" class="btn-skip">Skip to Login</a>                 
                 </div>
             </div>
 
@@ -206,7 +208,8 @@
                 <div class="carousel-caption">
                     <h1>Need Help?</h1>
                     <p>We are here to assist you throughout the voting process.</p>
-                    <a href="admin.php" class="btn btn-custom mb-3">Get Started</a>
+                    <a href="candidate/signup.php" class="btn btn-custom mb-3">Get Started</a>
+                    <a href="admin.php" class="btn-skip">Skip to Login</a>
                 </div>
             </div>
         </div>

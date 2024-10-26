@@ -1,37 +1,49 @@
 <?php
-// Include this PHP block at the top of your reset password page
 include "config.php"; // Include your database connection
+session_start(); // Start session to access stored token and email
 
-$token = $_GET['token'] ?? '';
 $message = '';
 
+// Check if form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $token = $_POST['token'];
-    $new_password = password_hash($_POST['new_password'], PASSWORD_BCRYPT);
+    $entered_token = $_POST['token'];
+    $new_password = $_POST['new_password'];
+    $confirm_password = $_POST['confirm_password'];
 
-    // Check if the token is valid
-    $stmt = $conn->prepare("SELECT voter_id FROM voters WHERE token = ?");
-    $stmt->bind_param("s", $token);
-    $stmt->execute();
-    $stmt->store_result();
+    // Retrieve the stored token from session
+    $generated_token = $_SESSION['reset_token'];
+    $reset_email = $_SESSION['reset_email'];
 
-    if ($stmt->num_rows > 0) {
-        $stmt->bind_result($voter_id);
-        $stmt->fetch();
+    // Validate token
+    if ($entered_token == $generated_token) {
+        // Check if passwords match
+        if ($new_password === $confirm_password) {
+            // Hash the new password
+            $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
 
-        // Update the password and clear the token
-        $stmt = $conn->prepare("UPDATE voters SET password = ?, token = NULL WHERE voter_id = ?");
-        $stmt->bind_param("si", $new_password, $voter_id);
-        if ($stmt->execute()) {
-            $message = "Your password has been reset successfully.";
+            // Update the password in the database
+            $stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
+            $stmt->bind_param("ss", $hashed_password, $reset_email);
+
+            if ($stmt->execute()) {
+                $message = "Password has been reset successfully.";
+                // Clear the session
+                session_unset();
+                session_destroy();
+                echo "<div class='alert alert-success'>Password has been reset successfully. Redirecting to login...</div>";
+
+                echo '<meta http-equiv="refresh" content="2;url=admin.php">';
+            } else {
+                $message = "Failed to reset password. Please try again.";
+            }
+
+            $stmt->close();
         } else {
-            $message = "There was an error resetting your password. Please try again.";
+            $message = "Passwords do not match. Please try again.";
         }
     } else {
-        $message = "This link is invalid or has already been used.";
+        $message = "Invalid token. Please check your email and try again.";
     }
-
-    $stmt->close();
 }
 
 $conn->close();
@@ -54,19 +66,25 @@ $conn->close();
                         <h4>Reset Password</h4>
                     </div>
                     <div class="card-body">
+                        <!-- Display message -->
                         <?php if (!empty($message)): ?>
                             <div class="alert alert-info">
                                 <?php echo $message; ?>
                             </div>
                         <?php endif; ?>
+
+                        <!-- Reset Password Form -->
                         <form method="POST" action="">
-                            <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>">
                             <div class="mb-3">
-                                <label for="new_password" class="form-label">New Password</label>
+                                <label for="token" class="form-label">Enter the Token:</label>
+                                <input type="text" class="form-control" id="token" name="token" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new_password" class="form-label">New Password:</label>
                                 <input type="password" class="form-control" id="new_password" name="new_password" required>
                             </div>
                             <div class="mb-3">
-                                <label for="confirm_password" class="form-label">Confirm Password</label>
+                                <label for="confirm_password" class="form-label">Confirm Password:</label>
                                 <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
                             </div>
                             <button type="submit" class="btn btn-primary">Reset Password</button>

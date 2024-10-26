@@ -39,55 +39,52 @@ include "config.php"; // Include your database connection
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
-    
+
     // Check if the email exists in the database
-    $stmt = $conn->prepare("SELECT voter_id, name FROM voters WHERE email = ?");
+    $stmt = $conn->prepare("SELECT admin_id, name FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $stmt->store_result();
     
-
     if ($stmt->num_rows > 0) {
-        
+        $stmt->bind_result($admin_id, $name);
         $stmt->fetch();
 
-        // Generate a unique token
-        $token = md5(uniqid(date('YmdHis'), true));
+        // Generate a unique reset token
+        $token = rand(100000, 999999); // Generate a 6-digit token
 
-        // Update the token in the voters table
-        $stmt = $conn->prepare("UPDATE voters SET token = ? WHERE voter_id = ?");
-        $stmt->bind_param("si", $token, $voter_id);
-        $stmt->execute();
-
-        // Prepare the password reset link
-       $reset_link = "http://localhost/fyp2/forget_form.php?token=" . $token;
-
-
-        // Send the email using PHPMailer
+        // Send the token to the user's email
         $mail = new PHPMailer(true);
 
         try {
-            //Server settings
+            // SMTP settings
             $mail->isSMTP();
-    $mail->Host = 'smtp.gmail.com';
-    $mail->SMTPAuth = true;
-    $mail->Username = 'rehankhan.upr@gmail.com'; // Your Gmail address
-    $mail->Password = 'ccqu utkq itfm lznb'; // App Password or Gmail Password
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // Enable TLS encryption
-    $mail->Port = 587; // TCP port to connect to
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'rehankhan.upr@gmail.com'; // Your Gmail address
+            $mail->Password = 'ccqu utkq itfm lznb'; // App Password
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
 
-    // Recipients
-    $mail->setFrom('UPRSenate@upr.edu.pk', 'UPR Senate22');
-    $mail->addAddress($email, 'Recipient Name');
+            // Recipients
+            $mail->setFrom('UPRSenate@upr.edu.pk', 'UPR Senate22');
+            $mail->addAddress($email, $name);
 
-    // Content
-    $mail->isHTML(true); // Set email format to HTML
-    $mail->Subject = 'Here is the subject';
-    $mail->Body    = 'This is the HTML message body in bold!';
-    $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+            // Content
+            $mail->isHTML(true);
+            $mail->Subject = 'Password Reset Token';
+            $mail->Body = "Dear $name,<br><br>Your password reset token is: <strong>$token</strong>.<br>Enter this token on the reset form to change your password.";
+            
+            $mail->send();
+            
+            // Store token and email in session for verification later
+            session_start();
+            $_SESSION['reset_token'] = $token;
+            $_SESSION['reset_email'] = $email;
 
-    $mail->send();
-    echo 'Message has been sent';
+            // Redirect to the token input form
+            header("Location: forget_form.php");
+            exit();
         } catch (Exception $e) {
             echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
         }

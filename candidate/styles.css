@@ -165,3 +165,52 @@ body {
         padding: 8px;
     }
 }
+/* Styling for the dropdown labels */
+.login-box label {
+    width: 100%;
+    max-width: 300px;
+    margin-bottom: 5px;
+    text-align: left;
+    color: #2b3e50;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Styling for input fields and select dropdowns */
+.login-box input,
+.login-box select {
+    width: 100%;
+    max-width: 300px;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    color: #2b3e50;
+    box-sizing: border-box;
+}
+
+/* Focus effect for all fields */
+.login-box input:focus,
+.login-box select:focus {
+    outline: none;
+    border-color: #00bcd4;
+    box-shadow: 0 0 5px rgba(0, 188, 212, 0.5);
+}
+
+/* Custom arrow for dropdowns */
+.login-box select {
+    appearance: none; /* Removes default arrow for custom styling */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z" fill="%232b3e50"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 10px;
+    cursor: pointer;
+}
+
+/* Hover effect for all fields */
+.login-box input:hover,
+.login-box select:hover {
+    border-color: #00bcd4;
+}

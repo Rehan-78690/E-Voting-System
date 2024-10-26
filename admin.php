@@ -1,40 +1,56 @@
 <?php
 include 'config.php';
 
+session_start(); // Start the session at the beginning
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-   // $login = false;
     $email = $_POST['email'];
     $password = $_POST['password'];
-    
-    if (!empty($email) && !empty($password)) {
-        // Sanitize user input to prevent SQL injection
-        $email = mysqli_real_escape_string($conn, $email);
-        $password = mysqli_real_escape_string($conn, $password);
-        
-        $sql = "SELECT * FROM users WHERE email = '$email' AND password = '$password'";
-        $result = mysqli_query($conn, $sql);
-        
-        if ($result && mysqli_num_rows($result) == 1) {
-            // $login = true;
-            $row = mysqli_fetch_assoc($result);
-            $admin_id = $row['admin_id'];
-           
-            session_start();
-            $_SESSION['admin_id'] = $admin_id;  // Store admin_id in the session
-            $_SESSION['email'] = $email;  
 
-            header("Location: welcome.php?login=success");
-            exit();
-        } else {
-            $error = "Invalid email or password.";
-        }
+    if (empty($email)) {
+        $error = 'Email field is empty.';
+    } elseif (empty($password)) {
+        $error = 'Password field is empty.';
     } else {
-        $error = "Please enter your email and password.";
+        $email = mysqli_real_escape_string($conn, $email);
+        $sql = "SELECT * FROM users WHERE email = ?";
+        $stmt = $conn->prepare($sql);
+
+        if ($stmt) {
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            
+            $result = $stmt->get_result();
+
+            if ($result && $result->num_rows == 1) {
+                $user = $result->fetch_assoc();
+
+                if (password_verify($password, $user['password'])) {
+                    session_regenerate_id(true);
+                    $_SESSION['email'] = $user['email'];
+                    $_SESSION['admin_id'] = $user['admin_id'];
+
+                    // Redirect to welcome page
+                    header("Location: welcome.php?success");
+                    exit();
+                } else {
+                    $error = "Invalid email or password.";
+                }
+            } else {
+                $error = "Invalid email or password.";
+            }
+
+            $stmt->close();
+        } else {
+            $error = "Failed to prepare SQL statement: " . $conn->error;
+        }
     }
 
     mysqli_close($conn);
 }
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,6 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <a href="#">Admin Portal</a>
                 <a href="candidate/candidate.php">Candidate Portal</a>
                 <a href="elections/voter.php">Voter Portal</a>
+                <a href="candidate/signup.php">No account? Sign up</a>
             </div>
         </div>
     </div>

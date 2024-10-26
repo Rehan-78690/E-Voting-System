@@ -246,7 +246,7 @@ form .btn-outline-success:hover {
         <a href="document_verification.php"> Document Verification</a>
         <a href="manage%20users/symbol_allocation.php"> Symbol Allocation</a>
         <a href="manage_feedback.php"> Feedback Management</a>
-        <a href="#"> Settings</a>
+        <a href="election_settings.php"> Settings</a>
         <a href="logout.php">Sign Out</a>
     </div>
 
