@@ -57,7 +57,7 @@
         }
 
         .btn-custom {
-            background-color: #ff6b6b;
+            background-color: red;
             border: none;
             padding: 12px 30px;
             font-size: 1.2rem;
@@ -73,7 +73,7 @@
         .btn-skip {
             background: none;
             border: none;
-            color: #f0f0f0;
+            color: skyblue;
             text-decoration: underline;
             font-size: 1rem;
             margin-top: 10px;
@@ -260,7 +260,7 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Redirect to login page

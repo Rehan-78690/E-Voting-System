@@ -24,10 +24,43 @@ $result = $conn->query($sql);
     <title>Approval Requests</title>
     <!-- Add Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<style>
+      .back-button {
+            position: absolute;
+            top: 70px;
+            left: 260px;
+        }
+</style>
+<link rel="stylesheet" href="styles.css">
+
 </head>
 <body class="bg-light">
+<?php
+  include 'sidebar.php';
+  ?>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="javascript:void(0);" id="navbarToggle">☰</a> <!-- Sidebar toggle button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="../welcome.php">Home</a>
+                    </li>
+                </ul>
+            
+    </nav>
+
+<div class="content" id="mainContent">
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Candidate Approval Requests</h1>
+        <h1 class="text-center mb-4">Approval Requests</h1>
 
         <?php if ($result && $result->num_rows > 0): ?>
             <div class="table-responsive">
@@ -36,6 +69,7 @@ $result = $conn->query($sql);
                         <tr>
                             <th>Name</th>
                             <th>Email</th>
+                            <th>Role</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
@@ -44,6 +78,7 @@ $result = $conn->query($sql);
                             <tr>
                                 <td><?php echo htmlspecialchars($row['candidate_name']); ?></td>
                                 <td><?php echo htmlspecialchars($row['candidate_email']); ?></td>
+                                <td><?php echo htmlspecialchars($row['role']); ?></td>
                                 <td class="text-center">
                                     <form method="POST" action="handle_approval.php" class="d-inline">
                                         <input type="hidden" name="candidate_id" value="<?php echo $row['candidate_id']; ?>">
@@ -66,7 +101,7 @@ $result = $conn->query($sql);
 
         <?php $conn->close(); ?>
     </div>
-
+    <script src="script.js"></script>
     <!-- Add Bootstrap JS (Optional) -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

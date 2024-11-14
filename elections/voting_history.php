@@ -4,24 +4,33 @@ session_start();
 
 // Check if the candidate (voter) is logged in
 if (!isset($_SESSION['candidate_id'])) {
-    header("Location: candidate_login.php");
+    header("Location:voter.php");
     exit();
 }
 
-// Fetch the voting history for the logged-in candidate
-$candidate_id = $_SESSION['candidate_id'];
+// Fetch the voting history for the logged-in candidate (voter)
+$voter_id = $_SESSION['candidate_id'];
 $query = "
-    SELECT e.election_name, e.election_date, c.candidate_name, c.candidate_role, v.total_votes,
-           IF(c.candidate_id = vh.candidate_id, 'won', 'lost') AS result_status
-    FROM voting_history vh
-    JOIN elections e ON vh.election_id = e.election_id
-    JOIN candidates c ON vh.candidate_id = c.candidate_id
-    JOIN votes v ON vh.id = v.id
-    WHERE vh.voter_hash = ? OR vh.candidate_id = ?
-    ORDER BY e.election_date DESC";
+    SELECT 
+        elections.election_name AS election,
+        candidates.candidate_name AS voted_for,
+        candidates.candidate_role AS candidate_role,
+        voters.date AS election_date,
+        YEAR(voters.date) AS year
+    FROM 
+        voters
+    JOIN 
+        candidates ON voters.candidate_id = candidates.candidate_id
+    JOIN 
+        elections ON voters.election_id = elections.election_id
+    WHERE 
+        voters.voter_id = ?
+    ORDER BY 
+        voters.date DESC;
+";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("ii", $candidate_id, $candidate_id);  // Bind candidate ID as both voter and candidate
+$stmt->bind_param("i", $voter_id);  // Bind only voter_id
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -70,10 +79,17 @@ $conn->close();
         .alert {
             margin-top: 20px;
         }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
     </style>
 </head>
 <body>
-
+<div class="back-button">
+    <a href="voter_dashboard.php" class="btn btn-secondary">← Back</a>
+</div>
 <div class="container">
     <h1>Your Voting History</h1>
 
@@ -84,25 +100,16 @@ $conn->close();
                     <th>Election Name</th>
                     <th>Date</th>
                     <th>Voted Candidate</th>
-                    <th>Role</th>
-                    <th>Result Status</th>
+                    <th>Designation</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($voting_history as $history): ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($history['election_name']); ?></td>
+                        <td><?php echo htmlspecialchars($history['election']); ?></td>
                         <td><?php echo date('d M Y', strtotime($history['election_date'])); ?></td>
-                        <td><?php echo htmlspecialchars($history['candidate_name']); ?></td>
+                        <td><?php echo htmlspecialchars($history['voted_for']); ?></td>
                         <td><?php echo htmlspecialchars($history['candidate_role']); ?></td>
-
-                        <td>
-                            <?php if ($history['result_status'] == 'won'): ?>
-                                <span class="badge bg-success">Won</span>
-                            <?php else: ?>
-                                <span class="badge bg-danger">Lost</span>
-                            <?php endif; ?>
-                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

@@ -35,10 +35,19 @@ function postNotification($message, $user_id, $user_role, $url = null) {
     $sql = "INSERT INTO notifications (noti_message, noti_status, noti_seen, noti_date, noti_type, noti_url, candidate_id, user_role)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        die("Error preparing statement: " . $conn->error);
+    }
+
     $stmt->bind_param('ssssssis', $message, $status, $seen, $date, $type, $url, $user_id, $user_role);
 
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        error_log("Failed to insert notification for user $user_id: " . $stmt->error);
+    } else {
+        error_log("Notification successfully sent to user $user_id");
+    }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -55,7 +64,7 @@ function postNotification($message, $user_id, $user_role, $url = null) {
 <div class="container mt-5">
     <h1>Send Notification to All Candidates</h1>
 
-    <form method="POST" action="/notification system/fetch_notification.php">
+    <form method="POST" action="post_notification.php">
         <div class="mb-3">
             <label for="message" class="form-label">Message</label>
             <textarea class="form-control" id="message" name="message" rows="3" required></textarea>

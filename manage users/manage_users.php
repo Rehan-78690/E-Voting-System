@@ -22,19 +22,9 @@ if (!isset($_SESSION['email'])) {
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar closed" id="sidebar">
-        <h5>Dashboard Menu</h5>
-        <!-- <a href="#" class="d-block mb-2" id="sidebarToggle">☰ Toggle Sidebar</a> -->
-        <a href="../welcome.php"> Dashboard</a>
-        <a href="manage%20candidates/manage_candidates.php">Candidate Management</a>
-        <a href="../admin_profile.php"> Profile Management</a>
-        <a href="../document_verification.php"> Document Verification</a>
-        <a href="symbol_allocation.php"> Symbol Allocation</a>
-        <a href="../manage_feedback.php"> Feedback Management</a>
-        <a href="#"> Settings</a>
-        <a href="../logout.php">Sign Out</a>
-    </div>
+   < <?php
+  include 'sidebar.php';
+  ?>
 
     <!-- Overlay -->
     <div class="overlay" id="overlay"></div>

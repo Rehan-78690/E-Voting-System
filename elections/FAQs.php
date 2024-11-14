@@ -59,9 +59,17 @@
             text-decoration: underline;
             color: #0056b3;
         }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
     </style>
 </head>
 <body>
+<div class="back-button">
+    <a href="voter_dashboard.php" class="btn btn-secondary">← Back</a>
+</div>
     <div class="container">
         <h1>Frequently Asked Questions (FAQs)</h1>
         <div class="accordion" id="faqAccordion">

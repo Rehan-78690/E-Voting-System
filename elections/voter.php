@@ -1,55 +1,43 @@
 <?php
-session_start();
-include 'config.php';
+include '../security/login_security.php'; // Include the security file
+include 'config.php'; // Include database connection
 
-$error = '';  
+start_secure_session(); // Start a secure session
+
+$error = ''; // Initialize error variable
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $email = $_POST['candidate_email'];
-    $password = $_POST['password'];
+    // CSRF token verification (if needed)
+    if (isset($_POST['csrf_token'])) {
+        verify_csrf_token($_POST['csrf_token']);
+    }
 
+    // Get and sanitize form input
+    $email = sanitize_input($_POST['candidate_email']);
+    $password = sanitize_input($_POST['password']);
+    $table = 'candidates'; // Specify the table
+    $email_field = 'candidate_email'; // Candidate email field in candidates table
+    $id_field = 'candidate_id'; // Candidate ID field in candidates table
+
+    // Check if fields are empty
     if (empty($email)) {
         $error = 'Email field is empty.';
     } elseif (empty($password)) {
         $error = 'Password field is empty.';
     } else {
-        $email = mysqli_real_escape_string($conn, $email);
-        $sql = "SELECT * FROM candidates WHERE candidate_email = ?";
-        $stmt = $conn->prepare($sql);
+        // Use secure login function from the security file
+        if (secure_login($email, $password, $table, $email_field, $id_field, $conn)) {
+            // Store candidate ID and email in the session
+            $_SESSION['candidate_id'] = $_SESSION['user_id']; // Assign 'user_id' from secure_login to 'candidate_id'
+            $_SESSION['candidate_email'] = $email;
 
-        if ($stmt) {
-            $stmt->bind_param("s", $email);
-            $stmt->execute();
-            
-            $result = $stmt->get_result();
-
-            if ($result) {
-                if ($result->num_rows == 1) {
-                    $user = $result->fetch_assoc();
-
-                    if (password_verify($password, $user['password'])) {
-                        $_SESSION['candidate_email'] = $email;
-                        $_SESSION['candidate_id'] = $user['candidate_id'];
-                        
-                        header("Location: voter_dashboard.php");
-                        exit();
-                    } else {
-                        $error = "Invulid email or password.";
-                    }
-                } else {
-                    $error = "Invlid email or password.";
-                }
-            } else {
-                $error = "Query failed: " . $conn->error;
-            }
-
-            $stmt->close();
+            // Redirect to candidate dashboard
+            header("Location: voter_dashboard.php");
+            exit();
         } else {
-            $error = "Failed to prepare SQL statement: " . $conn->error;
+            $error = "Invalid email or password.";
         }
     }
-
-    mysqli_close($conn);
 }
 ?>
 
@@ -67,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <img src="uprlogo.png" alt="University Logo" class="logo">
             <h3>Voter Login</h3>
             <form id="login-form" method="post" action="voter.php">
+            <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                 <input type="email" id="email" name="candidate_email" placeholder="Email" required>
                 <input type="password" id="password" name="password" placeholder="Password" required>
                 <div class="form-inline">

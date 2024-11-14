@@ -70,9 +70,17 @@
         .btn-primary:hover {
             background-color: #ff4747;
         }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
     </style>
 </head>
 <body>
+<div class="back-button">
+    <a href="voter_dashboard.php" class="btn btn-secondary">← Back</a>
+</div>
     <div class="container">
         <h1>How to Vote in the E-Voting System</h1>
         <div class="accordion" id="voteAccordion">

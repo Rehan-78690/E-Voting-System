@@ -16,24 +16,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_candidate'])) {
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
     
     // Handle file upload for the symbol
-    $symbol = null;
-    if (!empty($_FILES["symbol"]["name"])) {
-    $target_dir = "../../uploads/symbols/";
-    $symbol = $target_dir . basename($_FILES["symbol"]["name"]);
-    $symbol_file_type = strtolower(pathinfo($symbol, PATHINFO_EXTENSION));
+ // Handle file upload for the symbol
+$symbol = null;
+if (!empty($_FILES["symbol"]["name"])) {
+    $target_dir = $_SERVER['DOCUMENT_ROOT'] . "/EVotingSystem/uploads/symbols/"; // Set the server path
+    $original_file_name = $_FILES["symbol"]["name"];
+    
+    // Sanitize the file name: replace spaces with underscores and remove special characters
+    $clean_file_name = preg_replace('/[^a-zA-Z0-9-_\.]/', '', str_replace(' ', '_', $original_file_name));
+    $clean_file_name = strtolower($clean_file_name); // Convert to lowercase
+
+    // Add a unique identifier to prevent overwriting
+    $unique_file_name = uniqid() . '_' . $clean_file_name;
+
+    // Set the full file path
+    $symbol_path = $target_dir . $unique_file_name;
+
+    // Get the file extension
+    $symbol_file_type = strtolower(pathinfo($symbol_path, PATHINFO_EXTENSION));
 
     // Check file type and size
     if (in_array($symbol_file_type, ['jpg', 'png', 'jpeg']) && $_FILES["symbol"]["size"] < 5000000) {
-        move_uploaded_file($_FILES["symbol"]["tmp_name"], $symbol);
+        // Move the uploaded file to the target directory
+        if (move_uploaded_file($_FILES["symbol"]["tmp_name"], $symbol_path)) {
+            // Set the web-accessible path for database storage
+            $symbol = "/uploads/symbols/" . $unique_file_name;
+        } else {
+            echo "Failed to move uploaded file.";
+            exit();
+        }
     } else {
         echo "Invalid symbol file type or size.";
         exit();
     }
 }
 
+
+
     // Insert data into the database
     $sql = "INSERT INTO candidates (candidate_name, candidate_email, password, department, candidate_role, symbol, status,role, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, 'Pending','candidate',NOW(), NOW())";
+            VALUES (?, ?, ?, ?, ?, ?, 'approved','candidate',NOW(), NOW())";
 
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ssssss", $candidate_name, $candidate_email, $password, $candidate_department, $candidate_role, $symbol);
@@ -59,40 +81,55 @@ $result = $conn->query($query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Candidate Management</title>
+    <link rel="stylesheet" href="../styles.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    body {
+font-family: 'Poppins', sans-serif;
+background-color: #f8f9fa;
+}
+</style>
 </head>
 <body>
+     <!-- Sidebar -->
+ <div class="sidebar closed" id="sidebar">
+    <h5>Dashboard Menu</h5>
+    <a href="../../welcome.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'welcome.php' ? 'active-link' : ''; ?>">Dashboard</a>
+    <a href="../approval_requests.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'approval_requests.php' ? 'active-link' : ''; ?>">Approval Requests</a>
+    <a href="manage_candidates.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_candidates.php' ? 'active-link' : ''; ?>">Candidate Management</a>
+    <a href="../../admin_profile.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'admin_profile.php' ? 'active-link' : ''; ?>">Profile Management</a>
+    <a href="../../document_verification.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'document_verification.php' ? 'active-link' : ''; ?>">Document Verification</a>
+    <a href="../symbol_allocation.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'symbol_allocation.php' ? 'active-link' : ''; ?>">Symbol Allocation</a>
+    <a href="../../manage_feedback.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_feedback.php' ? 'active-link' : ''; ?>">Feedback Management</a>
+    <a href="../../elections/election_settings/election_settings.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'election_settings.php' ? 'active-link' : ''; ?>">Settings</a>
+    <a href="../../logout.php">Sign Out</a>
+</div>
+<div class="overlay" id="overlay"></div>
 
-    <!-- Navbar -->
-    <!-- <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container-fluid">
-            <button id="icon-ham" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <a class="navbar-brand" href="#">Admin Dashboard</a>
-            <div class="collapse navbar-collapse justify-content-end">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <span class="navbar-text">Welcome, <?php echo htmlspecialchars($_SESSION['email']); ?></span>
-                    </li>
-                    <li class="nav-item dropdown ms-3">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="../uprlogo.png" alt="Profile" class="rounded-circle" style="width: 30px; height: 30px;"> Muhammad
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="#">Edit Profile</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="logout.php">Log Out</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="javascript:void(0);" id="navbarToggle">☰</a> <!-- Sidebar toggle button -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="../../welcome.php">Home</a>
+                </li>
+            </ul>
+            <!-- Search form -->
+            <form class="d-flex">
+            <input class="form-control me-2" type="text" id="searchInput" placeholder="Search..." aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
         </div>
-    </nav> -->
-
-    <!-- Main Content -->
-    <div class="content">
+    </div>
+</nav>
+<div class="content" id="mainContent">
         <div class="container">
             <h1>Candidate Management</h1>
 
@@ -148,7 +185,7 @@ $result = $conn->query($query);
             <?php endif; ?>
         </td>
                             <td>
-                                <button class="btn btn-sm btn-secondary view-btn" data-bs-toggle="modal" data-bs-target="#viewCandidateModal" data-candidate-id="<?php echo $row['candidate_id']; ?>">View</button>
+                                <button class="btn btn-sm btn-primary view-btn" data-bs-toggle="modal" data-bs-target="#viewCandidateModal" data-candidate-id="<?php echo $row['candidate_id']; ?>">View</button>
 
                                 <button class="btn btn-sm btn-secondary edit-btn" data-bs-toggle="modal" data-bs-target="#editCandidateModal" data-candidate-id="<?php echo $row['candidate_id']; ?>">Edit</button>
 
@@ -189,6 +226,8 @@ $result = $conn->query($query);
                             <select class="form-select" id="candidateRole" name="candidate_role" required>
                                 <option value="Lecturer">Lecturer</option>
                                 <option value="Professor">Professor</option>
+                                <option value="Assistant_Professor">Assistant Professor</option>
+                                <option value="Associate_Professor">Associate Professor</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -240,6 +279,10 @@ $result = $conn->query($query);
                             <label for="editCandidateDepartment" class="form-label">Department</label>
                             <input type="text" class="form-control" id="editCandidateDepartment" name="candidate_department" required>
                         </div>
+                        <div class="mb-3">
+                        <label for="editSymbol" class="form-label">Symbol</label>
+                        <input type="file" class="form-control" id="editSymbol" name="symbol">
+                    </div>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
                     </form>
                 </div>
@@ -328,6 +371,6 @@ $result = $conn->query($query);
         return confirm('Are you sure you want to remove this candidate? This action cannot be undone.');
     }
     </script>
-
+<script src="../script.js"></script>
 </body>
 </html>

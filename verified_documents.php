@@ -34,11 +34,22 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verified Candidates</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+          .back-button {
+    position: fixed; /* Ensure it stays in place as the user scrolls */
+    top: 70px; /* Adjust to appear right below the fixed navbar */
+    left: 260px; /* Padding from the left edge of the screen */
+    z-index: 1050; /* Ensure it appears above most elements but below the navbar */
+}
+
+</style>
 </head>
 <body>
-
+<div class="back-button">
+    <a href="document_verification.php" class="btn btn-secondary">← Back</a>
+</div>
 <div class="container">
-    <h1 class="mt-4">Verified Candidates</h1>
+    <h1 class="mt-4">Candidates with verified documents</h1>
 
     <?php if ($result->num_rows > 0): ?>
         <table class="table table-bordered mt-4">

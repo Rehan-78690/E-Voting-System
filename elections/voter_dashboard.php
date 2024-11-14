@@ -278,7 +278,6 @@ $upcoming_election = $result->fetch_assoc();
                             <div class="card-body">
                             <p>Name: <strong><?php echo htmlspecialchars($row['candidate_name']); ?></strong></p>
                             <p>Address: <strong><?php echo htmlspecialchars($row['address']); ?></strong></p>
-                                <p>Status: <strong><?php echo htmlspecialchars($row['status']); ?></p>
                                 <a href="voter_profile.php" class="btn btn-primary">Update Profile</a>
                             </div>
                         </div>
@@ -293,7 +292,7 @@ $upcoming_election = $result->fetch_assoc();
                                 Voting History
                             </div>
                             <div class="card-body">
-                                <p>Last Election: <strong>2022 Presidential Election</strong></p>
+                                <p>Last Election: <strong>2023 Senate Election</strong></p>
                                 <p>Vote Confirmation: <a href="voting_history.php">View Receipt</a></p>
                             </div>
                         </div>
@@ -314,7 +313,7 @@ $upcoming_election = $result->fetch_assoc();
                 </div>
 
                 <div class="row">
-                    <!-- Educational Resources -->
+                   
                     <div class="col-lg-6 col-md-12">
                         <div class="card">
                             <div class="card-header">
@@ -322,8 +321,8 @@ $upcoming_election = $result->fetch_assoc();
                             </div>
                             <div class="card-body">
                                 <p><a href="how_to_vote.php">How to Vote</a></p>
-                                <p><a href="#">Voter Rights</a></p>
                                 <p><a href="FAQs.php">FAQs</a></p>
+                                <p><a href="FAQs.php"></a>.</p>
                             </div>
                         </div>
                     </div>
@@ -336,40 +335,14 @@ $upcoming_election = $result->fetch_assoc();
                             </div>
                             <div class="card-body">
                                 <p>Contact Information: <a href="#">Election Office</a></p>
-                                <p>Live Chat: <a href="#">Chat Now</a></p>
+                                <p>chat on Whatsapp: <a href="#">Chat Now</a></p>
                                 <p>Report Issues: <a href="#">Report a Problem</a></p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="row">
-                    <!-- Poll Locations and Hours -->
-                    <div class="col-lg-6 col-md-12">
-                        <div class="card">
-                            <div class="card-header">
-                                Poll Locations and Hours
-                            </div>
-                            <div class="card-body">
-                                <p><a href="#">Find Your Polling Station</a></p>
-                                <p>Hours: <strong>7:00 AM - 7:00 PM</strong></p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Sample Ballots -->
-                    <div class="col-lg-6 col-md-12">
-                        <div class="card">
-                            <div class="card-header">
-                                Sample Ballots
-                            </div>
-                            <div class="card-body">
-                                <p><a href="#">Preview Ballot</a></p>
-                                <p><a href="#">Practice Voting</a></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+               
 
                 <div class="row">
                     <!-- Feedback and Reporting -->
@@ -385,18 +358,7 @@ $upcoming_election = $result->fetch_assoc();
                         </div>
                     </div>
 
-                    <!-- News and Updates -->
-                    <div class="col-lg-6 col-md-12">
-                        <div class="card">
-                            <div class="card-header">
-                                News and Updates
-                            </div>
-                            <div class="card-body">
-                                <p><a href="#">Election News</a></p>
-                                <p><a href="#">Live Results</a></p>
-                            </div>
-                        </div>
-                    </div>
+                   
                 </div>
             </div>
             <div class="container mt-5">

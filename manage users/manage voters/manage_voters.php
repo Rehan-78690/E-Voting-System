@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_candidate'])) {
 
     // Insert data into the database
     $sql = "INSERT INTO candidates (candidate_name, candidate_email, password, department, candidate_role, symbol, status,role, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, 'Pending','voter',NOW(), NOW())";
+            VALUES (?, ?, ?, ?, ?, ?, 'Approved','voter',NOW(), NOW())";
 
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ssssss", $candidate_name, $candidate_email, $password, $candidate_department, $candidate_role, $symbol);
@@ -58,41 +58,55 @@ $result = $conn->query($query);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candidate Management</title>
+    <title>Voter Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+    body {
+font-family: 'Poppins', sans-serif;
+background-color: #f8f9fa;
+}
+</style>
 </head>
 <body>
+<div class="sidebar closed" id="sidebar">
+    <h5>Dashboard Menu</h5>
+    <a href="../../welcome.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'welcome.php' ? 'active-link' : ''; ?>">Dashboard</a>
+    <a href="../approval_requests.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'approval_requests.php' ? 'active-link' : ''; ?>">Approval Requests</a>
+    <a href="../manage$20candidates/manage_candidates.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_candidates.php' ? 'active-link' : ''; ?>">Candidate Management</a>
+    <a href="../../admin_profile.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'admin_profile.php' ? 'active-link' : ''; ?>">Profile Management</a>
+    <a href="../../document_verification.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'document_verification.php' ? 'active-link' : ''; ?>">Document Verification</a>
+    <a href="../symbol_allocation.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'symbol_allocation.php' ? 'active-link' : ''; ?>">Symbol Allocation</a>
+    <a href="../../manage_feedback.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_feedback.php' ? 'active-link' : ''; ?>">Feedback Management</a>
+    <a href="../../elections/election_settings/election_settings.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'election_settings.php' ? 'active-link' : ''; ?>">Settings</a>
+    <a href="../../logout.php">Sign Out</a>
+</div>
+<div class="overlay" id="overlay"></div>
 
-    <!-- Navbar -->
-    <!-- <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container-fluid">
-            <button id="icon-ham" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <a class="navbar-brand" href="#">Admin Dashboard</a>
-            <div class="collapse navbar-collapse justify-content-end">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <span class="navbar-text">Welcome, <?php echo htmlspecialchars($_SESSION['email']); ?></span>
-                    </li>
-                    <li class="nav-item dropdown ms-3">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="../uprlogo.png" alt="Profile" class="rounded-circle" style="width: 30px; height: 30px;"> Muhammad
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="#">Edit Profile</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="logout.php">Log Out</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="javascript:void(0);" id="navbarToggle">☰</a> <!-- Sidebar toggle button -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="../../welcome.php">Home</a>
+                </li>
+            </ul>
+            <!-- Search form -->
+            <form class="d-flex">
+            <input class="form-control me-2" type="text" id="searchInput" placeholder="Search..." aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
         </div>
-    </nav> -->
-
-    <!-- Main Content -->
-    <div class="content">
+    </div>
+</nav>
+<div class="content" id="mainContent">
         <div class="container">
             <h1>Voter Management</h1>
 
@@ -139,11 +153,11 @@ $result = $conn->query($query);
                             <td><?php echo htmlspecialchars($row['department']); ?></td>
                            
                             <td>
-                                <button class="btn btn-sm btn-secondary view-btn" data-bs-toggle="modal" data-bs-target="#viewCandidateModal" data-candidate-id="<?php echo $row['candidate_id']; ?>">View</button>
+                                <button class="btn btn-sm btn-primary view-btn" data-bs-toggle="modal" data-bs-target="#viewCandidateModal" data-candidate-id="<?php echo $row['candidate_id']; ?>">View</button>
 
                                 <button class="btn btn-sm btn-secondary edit-btn" data-bs-toggle="modal" data-bs-target="#editCandidateModal" data-candidate-id="<?php echo $row['candidate_id']; ?>">Edit</button>
 
-                                <form method="POST" action="delete_voter.php" style="display:inline;"enctype="multipart/form-data"onsubmit="return confirmDelete();">
+                                <form method="POST" action="delete_voters.php" style="display:inline;"enctype="multipart/form-data"onsubmit="return confirmDelete();">
                                     <input type="hidden" name="candidate_id" value="<?php echo $row['candidate_id']; ?>">
                                     <button type="submit" class="btn btn-sm btn-danger">Remove</button>
                                 </form>
@@ -320,6 +334,6 @@ $result = $conn->query($query);
         return confirm('Are you sure you want to remove this voter? This action cannot be undone.');
     }
     </script>
-
+<script src="../script.js"></script>
 </body>
 </html>

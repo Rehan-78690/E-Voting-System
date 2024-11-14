@@ -30,11 +30,10 @@ if (isset($_POST['approve'])) {
     $message = "Candidate approved and notified via email.";
 } elseif (isset($_POST['reject'])) {
     // Update status to 'Rejected'
-    $sql = "UPDATE candidates SET status = 'Rejected' WHERE candidate_id = ?";
+    $sql = "DELETE FROM candidates WHERE candidate_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $candidate_id);
     $stmt->execute();
-
     // Send rejection email
     sendRejectionEmail($candidate_email, $candidate_name);
 

@@ -51,20 +51,9 @@ $result = $conn->query($sql);
 ?>
 
 
-   <!-- Sidebar -->
-   <div class="sidebar closed" id="sidebar">
-        <h5>Dashboard Menu</h5>
-        <!-- <a href="#" class="d-block mb-2" id="sidebarToggle">☰ Toggle Sidebar</a> -->
-        <a href="welcome.php"> Dashboard</a>
-        <a href="manage%20users/approval_requests.php"> Approval requests</a>
-        <a href="manage%20users/manage%20candidates/manage_candidates.php">Candidate Management</a>
-        <a href="admin_profile.php"> Profile Management</a>
-        
-        <a href="manage%20users/symbol_allocation.php"> Symbol Allocation</a>
-        <a href="manage_feedback.php"> Feedback Management</a>
-        <a href="#"> Settings</a>
-        <a href="logout.php">Sign Out</a>
-    </div>
+   < <?php
+  include 'sidebar.php';
+  ?>
 
     <!-- Overlay -->
     <div class="overlay" id="overlay"></div>
@@ -120,6 +109,7 @@ $result = $conn->query($sql);
                                 <select name="verification_status" class="form-select" required>
                                     <option value="verified">Verify</option>
                                     <option value="rejected">Reject</option>
+                                    <option value="rejected">Request-additional</option>
                                 </select>
                                 <button type="submit" class="btn btn-primary mt-2">Update Status</button>
                             </form>
@@ -132,11 +122,11 @@ $result = $conn->query($sql);
     <?php else: ?>
         <p>No documents pending verification.</p>
     <?php endif; ?>
-    <a href="verified_documents.php"> view verified documennts</a>
+    <a href="verified_documents.php"> view verified documents</a>
 </div>
 
 
-<a href="verified_documents.php"> view verified documennts</a>
+<a href="verified_documents.php"> view verified documents</a>
 <footer>
         <p>&copy; 2024 E-Voting UPR. All rights reserved.</p>
         <p>Designed for University of Poonch Rawalakot Elections</p>

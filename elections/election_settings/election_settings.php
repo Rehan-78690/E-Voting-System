@@ -1,8 +1,8 @@
 <?php
-include 'config.php';
+include '../../config.php';
 session_start();
 if (!isset($_SESSION['email'])) {
-    header("Location: admin.php");
+    header("Location: ../../admin.php");
     exit();
 }
 ?>
@@ -19,23 +19,22 @@ if (!isset($_SESSION['email'])) {
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
-<link rel="stylesheet" href="style.css">
     <!-- Sidebar -->
     <div class="sidebar closed" id="sidebar">
-        <h5>Dashboard Menu</h5>
-        <!-- <a href="#" class="d-block mb-2" id="sidebarToggle">☰ Toggle Sidebar</a> -->
-        <a href="manage%20users/approval_requests.php"> Approval requests</a>
-        <a href="manage%20users/manage%20candidates/manage_candidates.php">Candidate Management</a>
-        <a href="admin_profile.php"> Profile Management</a>
-        <a href="document_verification.php"> Document Verification</a>
-        <a href="manage%20users/symbol_allocation.php"> Symbol Allocation</a>
-        <a href="manage_feedback.php"> Feedback Management</a>
-        <a href="#"> Settings</a>
-        <a href="logout.php">Sign Out</a>
-    </div>
+    <h5>Dashboard Menu</h5>
+    <a href="../../welcome.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'welcome.php' ? 'active-link' : ''; ?>">Dashboard</a>
+    <a href="../../manage%20users/approval_requests.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'approval_requests.php' ? 'active-link' : ''; ?>">Approval Requests</a>
+    <a href="../../manage%20users/manage%20candidates/manage_candidates.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_candidates.php' ? 'active-link' : ''; ?>">Candidate Management</a>
+    <a href="../../admin_profile.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'admin_profile.php' ? 'active-link' : ''; ?>">Profile Management</a>
+    <a href="../../document_verification.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'document_verification.php' ? 'active-link' : ''; ?>">Document Verification</a>
+    <a href="../../manage%20users/symbol_allocation.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'symbol_allocation.php' ? 'active-link' : ''; ?>">Symbol Allocation</a>
+    <a href="../../manage_feedback.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_feedback.php' ? 'active-link' : ''; ?>">Feedback Management</a>
+    <a href="election_settings.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'election_settings.php' ? 'active-link' : ''; ?>">Settings</a>
+    <a href="../../logout.php">Sign Out</a>
+</div>
 
     <!-- Overlay -->
     <div class="overlay" id="overlay"></div>
@@ -50,7 +49,7 @@ if (!isset($_SESSION['email'])) {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="welcome.php">Home</a>
+                        <a class="nav-link active" aria-current="page" href="../../welcome.php">Home</a>
                     </li>
                 </ul>
                 <!-- Search form -->
@@ -72,7 +71,7 @@ if (!isset($_SESSION['email'])) {
                         <div class="card-body">
                             <h5 class="card-title">Add new election</h5>
                             <p>Start a new election</p>
-                            <a href="manage%20users/manage_users.php" class="btn btn-primary">Add election</a>
+                            <a href="add_elections.php" class="btn btn-primary">Add election</a>
                         </div>
                     </div>
                 </div>
@@ -81,7 +80,7 @@ if (!isset($_SESSION['email'])) {
                         <div class="card-body">
                             <h5 class="card-title">Manage elections</h5>
                             <p>Update status of existing elections</p>
-                            <a href="admin_profile.php" class="btn btn-primary">Manage Status</a>
+                            <a href="manage_election_status.php" class="btn btn-primary">Manage Status</a>
                         </div>
                     </div>
                 </div>
@@ -92,7 +91,7 @@ if (!isset($_SESSION['email'])) {
                         <div class="card-body">
                             <h5 class="card-title">Manage Polling </h5>
                             <p>Activate or deactivate elections in one click</p>
-                            <a href="manage%20users/manage_users.php" class="btn btn-primary">Polling</a>
+                            <a href="polling_activation.php" class="btn btn-primary">Polling</a>
                         </div>
                     </div>
                 </div>
@@ -112,6 +111,6 @@ if (!isset($_SESSION['email'])) {
         <p>&copy; 2024 E-Voting UPR. All rights reserved.</p>
         <p>Designed for University of Poonch Rawalakot Elections</p>
     </footer>
-<script src="scripts.js"></script>
+<script src="../../scripts.js"></script>
 </body>
 </html>

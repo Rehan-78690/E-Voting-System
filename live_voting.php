@@ -5,34 +5,38 @@ if (!isset($_SESSION['email'])) {
     header("Location: admin.php");
     exit();
 }
-$election_check = "SELECT status FROM elections";
+
+// Fetch all elections and check if there is an active one
+$election_check = "SELECT election_id,election_name, status FROM elections WHERE status = 'active' LIMIT 1";
 $result = mysqli_query($conn, $election_check);
+
 if (mysqli_num_rows($result) > 0) {
     $row = $result->fetch_assoc();
+    $election_id = $row['election_id'];
+    $election_name = $row['election_name'];
     $election_status = $row['status'];
-    if ($election_status === 'completed') {
-        echo "Election is completed.See voting history??";
-        $delay=2;
+
+    // Ensure only active election is considered
+    if ($election_status === 'active') {
+        echo "Live voting is in progress for : " . $election_name;
+    } else {
+    
+        $delay = 2;
         header("refresh:$delay;url=welcome.php");
-       
         exit();
     }
-    if($election_status===('inactive')){
-        echo"Elections have not started yet.Activate elections now";
-        $delay=2;
-        header("refresh:$delay;url=welcome.php");
-       
-        exit();
-    }
-    if($election_status===('upcoming')){
-        echo"Elections are starting soon.Wait for a few days to see the live voting results";
-        $delay=2;
-        header("refresh:$delay;url=welcome.php");
-        //view candidates page
-       
-        exit();
-    }
-    }
+} else {
+    echo "
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (confirm('No elections are active at the moment. Would you like to start a new election?')) {
+            window.location.href = 'elections/election_settings/add_elections.php';
+        } else {
+            window.location.href = 'welcome.php';
+        }
+    });
+</script>";
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -106,6 +110,13 @@ if (mysqli_num_rows($result) > 0) {
         <div class="card-header">
             Live Voting Results - Candidate Votes
         </div>
+        <div class="card-body">
+            <!-- Voter Turnout Summary -->
+            <div class="voter-turnout text-center mb-4">
+                <p><strong>Total Voters:</strong> <span id="totalVoters">0</span></p>
+                <p><strong>Voters Who Voted:</strong> <span id="votedVoters">0</span></p>
+                <p><strong>Remaining Voters:</strong> <span id="remainingVoters">0</span></p>
+            </div>
         <div class="card-body">
             <!-- Chart.js Canvas for Bar Chart -->
             <div class="chart-container">
@@ -245,17 +256,23 @@ if (mysqli_num_rows($result) > 0) {
         votePieChart.data.datasets[0].data = votes;
         votePieChart.update();
     }
-
+    const activeElectionId = <?php echo json_encode($election_id); ?>;
     // Function to fetch live voting data from the server
     function fetchLiveVotingData() {
-        fetch('get_live_voting_data.php')
-            .then(response => response.json())
-            .then(data => {
-                updateCharts(data);
+    fetch('get_live_voting_data.php?election_id=' + activeElectionId)
+        .then(response => response.json())
+        .then(data => {
+            // Check if data contains expected keys before updating charts
+            if (data.liveVotingData && data.voterTurnout) {
+                // Update charts with candidate voting data
+                updateCharts(data.liveVotingData);
 
-                // Update the total votes
-                const totalVotes = data.reduce((acc, candidate) => acc + parseInt(candidate.total_votes), 0);
+                // Update the total votes and voter turnout information
+                const totalVotes = data.liveVotingData.reduce((acc, candidate) => acc + parseInt(candidate.total_votes), 0);
                 document.getElementById('totalVotes').textContent = totalVotes;
+                document.getElementById('totalVoters').textContent = data.voterTurnout.totalVoters;
+                document.getElementById('votedVoters').textContent = data.voterTurnout.votedVoters;
+                document.getElementById('remainingVoters').textContent = data.voterTurnout.remainingVoters;
 
                 // Update the last updated time
                 const now = new Date();
@@ -263,8 +280,15 @@ if (mysqli_num_rows($result) > 0) {
                 const minutes = String(now.getMinutes()).padStart(2, '0');
                 const formattedTime = `${hours}:${minutes}`;
                 document.getElementById('lastUpdated').textContent = `Last updated: ${formattedTime}`;
-            });
-    }
+            } else {
+                console.error("Unexpected response structure:", data);
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching live voting data:", error);
+        });
+}
+
 
     // Initialize both charts on page load
     window.onload = function () {
@@ -283,6 +307,9 @@ if (mysqli_num_rows($result) > 0) {
         // Initial fetch to populate the charts
         fetchLiveVotingData();
     };
+    function onclick(){
+        alert("No elections at the moment. Start one")
+    }
 </script>
 
 </body>

@@ -1,14 +1,10 @@
 <?php
 session_start();
-include 'config.php'; // Database connection
-
-// Check if the admin is logged in
+include 'config.php'; 
 if (!isset($_SESSION['email'])) {
     header("Location: admin.php");
     exit();
 }
-
-// Fetch all feedback from the database
 $sql = "SELECT f.id, c.candidate_name, f.feedback_text, f.date, f.status 
         FROM feedback f 
         JOIN candidates c ON f.candidate_id = c.candidate_id
@@ -38,21 +34,9 @@ $result = $conn->query($sql);
     </style>
 </head>
 <body>
-    
-    <!-- Sidebar -->
-    <div class="sidebar closed" id="sidebar">
-        <h5>Dashboard Menu</h5>
-        <!-- <a href="#" class="d-block mb-2" id="sidebarToggle">☰ Toggle Sidebar</a> -->
-        <a href="manage%20users/approval_requests.php"> Approval requests</a>
-        <a href="manage%20users/manage%20candidates/manage_candidates.php">Candidate Management</a>
-        <a href="admin_profile.php"> Profile Management</a>
-        <a href="document_verification.php"> Document Verification</a>
-        <a href="manage%20users/symbol_allocation.php"> Symbol Allocation</a>
-        <a href="manage_feedback.php"> Feedback Management</a>
-        <a href="#"> Settings</a>
-        <a href="logout.php">Sign Out</a>
-    </div>
-
+    <?php
+  include 'sidebar.php';
+  ?>
     <!-- Overlay -->
     <div class="overlay" id="overlay"></div>
 
@@ -79,13 +63,13 @@ $result = $conn->query($sql);
     </nav>
 
     <div class="content" id="mainContent">
-    <h2>Candidate Feedback</h2>
+    <h2 >User Feedback</h2>
 
     <?php if ($result->num_rows > 0): ?>
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Candidate Name</th>
+                    <th>Name</th>
                     <th>Feedback</th>
                     <th>Submission Date</th>
                     <th>Status</th>

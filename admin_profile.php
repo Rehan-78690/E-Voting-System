@@ -140,7 +140,7 @@ if (isset($_POST['current_password'], $_POST['password'], $_POST['cpassword'])) 
             color: white;
             padding-top: 20px;
             z-index: 1000;
-            transition: all 0.3s ease;
+            transition: all 0.1s ease;
         }
         .sidebar h5 {
             text-align: center;
@@ -154,6 +154,19 @@ if (isset($_POST['current_password'], $_POST['password'], $_POST['cpassword'])) 
             text-decoration: none;
             transition: background-color 0.3s, color 0.3s;
         }
+        .sidebar a.active-link {
+    background-color: #0056b3;
+    color: white;
+    box-shadow: 2px 2px 8px rgba(5, 110, 100, 0.2);
+    transform: translateX(1px);
+    border-left: 5px solid #007bff;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    -webkit-transition: all 0.3s ease;
+    -moz-transition: all 0.3s ease;
+    -ms-transition: all 0.3s ease;
+    -o-transition: all 0.3s ease;
+}
         .sidebar a:hover {
             background-color: #0056b3; /* Red color on hover */
             color: white;
@@ -274,18 +287,9 @@ if (isset($_POST['current_password'], $_POST['password'], $_POST['cpassword'])) 
         </div>
     </nav>
 
-    <div class="sidebar closed" id="sidebar">
-        <h5>Dashboard Menu</h5>
-        <!-- <a href="#" class="d-block mb-2" id="sidebarToggle">☰ Toggle Sidebar</a> -->
-        <a href="manage%20users/approval_requests.php"> Approval requests</a>
-        <a href="manage%20users/manage%20candidates/manage_candidates.php">Candidate Management</a>
-        <a href="live_voting.php"> Live voting</a>
-        <a href="document_verification.php"> Document Verification</a>
-        <a href="manage%20users/symbol_allocation.php"> Symbol Allocation</a>
-        <a href="manage_feedback.php"> Feedback Management</a>
-        <a href="#"> Settings</a>
-        <a href="logout.php">Sign Out</a>
-    </div>
+    < <?php
+  include 'sidebar.php';
+  ?>
     <!-- Main Content -->
     <div class="content">
         <div class="container">

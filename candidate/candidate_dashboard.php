@@ -17,22 +17,22 @@ $upcoming_election = $result->fetch_assoc();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Candidate Dashboard</title>
-    <!-- Bootstrap CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
-            background-color: #f0f4f8;
-            font-family: "Open Sans", sans-serif;
+            background-color: whitesmoke;
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             padding-top: 56px;
         }
         .navbar {
-            background-color: #2b3e50;
+            background-color: #010615;
         }
         .navbar-brand {
             font-size: 1.5rem;
-            color: white !important;
+            color: #CADCFC !important;
         }
         .content {
             padding: 20px;
@@ -48,11 +48,11 @@ $upcoming_election = $result->fetch_assoc();
             left: 0;
             width: 250px;
             height: 100vh;
-            background-color: #1e3d58;
-            color: white;
+            background-color: #01071e;
+            color: #FCF6F5;
             padding-top: 20px;
             z-index: 1000;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
         }
         .sidebar h5 {
             text-align: center;
@@ -60,14 +60,15 @@ $upcoming_election = $result->fetch_assoc();
             margin-bottom: 30px;
         }
         .sidebar a {
-            padding: 10px 15px;
+            padding: 11px 16px;
             display: block;
-            color: white;
+            size: 1.3rem;
+            color: #CADCFC;
             text-decoration: none;
-            transition: all 0.3s;
+            transition: all 0.4s;
         }
         .sidebar a:hover {
-            background-color: #3b637f;
+            background-color: #007bff;
         }
         .sidebar.closed {
             left: -250px;
@@ -110,21 +111,21 @@ $upcoming_election = $result->fetch_assoc();
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
         .card-header {
-            background-color: #2b3e50;
-            color: white;
+            background-color:#CADCF0;
+            color: black;
             padding: 15px;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
         }
         .btn-primary {
-            background-color: #ff6b6b;
+            background-color: #007bff;
             border: none;
         }
         .btn-primary:hover {
-            background-color: #ff4747;
+            background-color: blue;
         }
         .footer {
-            background-color: #1e3d58;
-            color: white;
+            background-color: #010615;
+            color: #CADCFC;
             text-align: center;
             padding: 15px;
         }
@@ -136,7 +137,7 @@ $upcoming_election = $result->fetch_assoc();
         }
         .notification-icon {
             font-size: 24px;
-            color: white;
+            color: #CADCFC;
         }
         .badge {
             background-color: red;
@@ -197,7 +198,7 @@ $upcoming_election = $result->fetch_assoc();
         <div class="notification-area">
             <i class="fas fa-bell notification-icon"></i>
             <span id="notificationCount" class="badge">0</span>
-            <ul id="notifications" class="dropdown-menu">
+            <ul id="notifications" class="dropdown-menu">s
                 <li class="dropdown-item">No notifications</li>
             </ul>
         </div>
@@ -266,7 +267,6 @@ $upcoming_election = $result->fetch_assoc();
             </div>
         </div>
 
-        <!-- Upcoming Election Information -->
         <?php if ($upcoming_election): ?>
             <div class="alert alert-info mt-5">
                 <h4>Upcoming Election</h4>
@@ -287,80 +287,123 @@ $upcoming_election = $result->fetch_assoc();
     &copy; 2024 UPR Senate Election - All rights reserved
 </footer>
 
-<!-- JavaScript for Sidebar & Notifications -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="../notification system/app.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        const sidebarToggle = document.getElementById('navbarToggle');
-        const notificationArea = document.querySelector('.notification-area');
-        const notifications = document.getElementById('notifications');
-        const notificationCount = document.getElementById('notificationCount');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const sidebarToggle = document.getElementById('navbarToggle');
+    const notificationArea = document.querySelector('.notification-area');
+    const notifications = document.getElementById('notifications');
+    const notificationCount = document.getElementById('notificationCount');
 
-        // Sidebar toggle
-        sidebarToggle.addEventListener('click', function () {
-            sidebar.classList.toggle('open');
-            sidebar.classList.toggle('closed');
+    // Sidebar toggle
+    sidebarToggle.addEventListener('click', function () {
+        sidebar.classList.toggle('open');
+        sidebar.classList.toggle('closed');
 
-            // Only show overlay on smaller screens
-            if (window.innerWidth <= 768) {
-                overlay.classList.toggle('active');
-            }
-        });
-
-        overlay.addEventListener('click', function () {
-            sidebar.classList.remove('open');
-            sidebar.classList.add('closed');
-            overlay.classList.remove('active');
-        });
-
-        // Show/Hide notifications
-        notificationArea.addEventListener('click', function () {
-            notifications.classList.toggle('show');
-        });
-
-        // Fetch notifications
-        fetchNotifications();
-
-        function fetchNotifications() {
-            $.ajax({
-                type: 'GET',
-                url: '../notification system/fetch_notification.php',
-                dataType: 'json',
-                success: function (response) {
-                    updateNotificationList(response);
-                },
-                error: function (xhr, status, error) {
-                    console.error('Error fetching notifications:', error);
-                }
-            });
-        }
-
-        function updateNotificationList(response) {
-            notifications.innerHTML = '';
-            if (response.data && response.data.length > 0) {
-                notificationCount.textContent = response.data.length;
-                notificationCount.style.display = 'inline';
-
-                response.data.forEach(notification => {
-                    const listItem = document.createElement('li');
-                    listItem.classList.add('dropdown-item');
-                    listItem.innerHTML = `
-                        <a href="${notification.noti_url || '#'}">
-                            ${notification.noti_message} - <small>${new Date(notification.noti_date).toLocaleString()}</small>
-                        </a>
-                    `;
-                    notifications.appendChild(listItem);
-                });
-            } else {
-                notificationCount.textContent = 0;
-                notifications.innerHTML = '<li class="dropdown-item">No notifications</li>';
-                notificationCount.style.display = 'none';
-            }
+        // Only show overlay on smaller screens
+        if (window.innerWidth <= 768) {
+            overlay.classList.toggle('active');
         }
     });
+
+    overlay.addEventListener('click', function () {
+        sidebar.classList.remove('open');
+        sidebar.classList.add('closed');
+        overlay.classList.remove('active');
+    });
+
+    // Show/Hide notifications dropdown
+    notificationArea.addEventListener('click', function () {
+        notifications.classList.toggle('show');
+    });
+
+    // Fetch notifications immediately on page load
+    fetchNotifications();
+
+    function fetchNotifications() {
+        $.ajax({
+            type: 'GET',
+            url: '../notification system/fetch_notification.php',
+            dataType: 'json',
+            success: function (response) {
+                if (response.status === 'success') {
+                    updateNotificationList(response);
+                } else {
+                    console.error('Error fetching notifications:', response.message || 'Unknown error');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error fetching notifications:', error);
+            }
+        });
+    }
+
+    function updateNotificationList(response) {
+        notifications.innerHTML = ''; // Clear the list first
+        if (response.data && response.data.length > 0) {
+            notificationCount.textContent = response.data.length;
+            notificationCount.style.display = 'inline'; // Show count badge
+
+            response.data.forEach(notification => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('dropdown-item', 'notification-item');
+                listItem.dataset.notificationId = notification.id; // Store the notification ID in dataset
+
+                listItem.innerHTML = `
+                    <div class="notification-content">
+                        ${notification.noti_message} - <small>${new Date(notification.noti_date).toLocaleString()}</small>
+                    </div>
+                `;
+                notifications.appendChild(listItem);
+            });
+        } else {
+            notificationCount.textContent = 0;
+            notifications.innerHTML = '<li class="dropdown-item">No notifications</li>';
+            notificationCount.style.display = 'none'; // Hide badge if no notifications
+        }
+    }
+
+    // Click event handler for marking notifications as seen
+    $(document).on('click', '.notification-item', function (event) {
+        event.preventDefault(); // Prevent default action
+
+        const notificationId = $(this).data('notification-id');
+        if (!notificationId) {
+            console.warn('Notification ID is missing for the clicked item.');
+            return;
+        }
+
+        // AJAX to mark notification as seen
+        $.ajax({
+            type: 'POST',
+            url: '../notification system/seen_notification.php',
+            data: { notification_id: notificationId },
+            success: function (response) {
+                try {
+                    const res = typeof response === 'string' ? JSON.parse(response) : response;
+                    if (res.status === 'success') {
+                        console.log('Notification marked as seen');
+                        fetchNotifications(); // Refresh notifications
+                    } else {
+                        console.error('Failed to mark notification as seen:', res.message);
+                    }
+                } catch (error) {
+                    console.error('Unexpected response format:', response);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error marking notification as seen:', error);
+            }
+        });
+    });
+});
+
 </script>
+
 </body>
 </html>

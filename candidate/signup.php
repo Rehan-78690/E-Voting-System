@@ -142,10 +142,10 @@ function sendEmailToAdmin($candidate_email, $candidate_name, $role, $designation
                     <option value="candidate">Candidate</option>
                 </select>
                 <select name="designation" id="designation" required>
-                    <option value="lecturer">Lecturer</option>
-                    <option value="assistant_professor">Assistant Professor</option>
-                    <option value="associate_professor">Associate Professor</option>
-                    <option value="professor">Professor</option>
+                    <option value="Lecturer">Lecturer</option>
+                    <option value="Assistant_professor">Assistant Professor</option>
+                    <option value="Associate_professor">Associate Professor</option>
+                    <option value="Professor">Professor</option>
                 </select>
                 <button type="submit">SIGN UP</button>
             </form>

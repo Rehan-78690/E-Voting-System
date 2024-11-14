@@ -159,10 +159,14 @@ body {
         font-size: 16px;
     }
 
-    .login-box input,
+    .login-box input{
+        font-size: 14px;
+        padding: 8px;
+    }
     .login-box button {
         font-size: 14px;
         padding: 8px;
+        max-width: 35%;
     }
 }
 /* Styling for the dropdown labels */
